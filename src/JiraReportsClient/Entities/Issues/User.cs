@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Jql;
+namespace JiraReportsClient.Entities.Issues;
 
-[DebuggerDisplay("User: {DisplayName}")]
+[DebuggerDisplay("{DisplayName}")]
 public class User
 {
     [JsonPropertyName("accountId")]

@@ -1,15 +1,17 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Jql;
+namespace JiraReportsClient.Entities.Issues;
 
-    public class IssueType
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
+[DebuggerDisplay("{Name}")]
+public class IssueType
+{
+    [JsonPropertyName("id")] 
+    public string Id { get; set; }
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+    [JsonPropertyName("name")] 
+    public string Name { get; set; }
 
-        [JsonPropertyName("hierarchyLevel")]
-        public int? HierarchyLevel { get; set; }
-    }
+    [JsonPropertyName("hierarchyLevel")] 
+    public int? HierarchyLevel { get; set; }
+}

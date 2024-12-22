@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
+using JiraReportsClient.Entities.Boards;
 
-namespace JiraCmdLineTool.Common.Objects.Boards;
+namespace JiraReportsClient.Entities.Boards;
 
 public class BoardsResponse
 {

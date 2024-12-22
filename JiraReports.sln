@@ -1,8 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0AE2D48B-F029-4E68-B7AB-F73317A70176}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A9CC0FA2-0C93-49A4-BE51-0A2C6C1CE656}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiraReportsClientTests", "tests\JiraReportsClientTests\JiraReportsClientTests.csproj", "{5A5E5500-D596-4F07-ACE0-F4F39DE0E51E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiraReportsClient", "src\JiraReportsClient\JiraReportsClient.csproj", "{0375D66A-EF45-4191-BC6A-E70714EB8DAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A5E5500-D596-4F07-ACE0-F4F39DE0E51E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A5E5500-D596-4F07-ACE0-F4F39DE0E51E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A5E5500-D596-4F07-ACE0-F4F39DE0E51E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A5E5500-D596-4F07-ACE0-F4F39DE0E51E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0375D66A-EF45-4191-BC6A-E70714EB8DAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0375D66A-EF45-4191-BC6A-E70714EB8DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0375D66A-EF45-4191-BC6A-E70714EB8DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0375D66A-EF45-4191-BC6A-E70714EB8DAD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5A5E5500-D596-4F07-ACE0-F4F39DE0E51E} = {A9CC0FA2-0C93-49A4-BE51-0A2C6C1CE656}
+		{0375D66A-EF45-4191-BC6A-E70714EB8DAD} = {0AE2D48B-F029-4E68-B7AB-F73317A70176}
 	EndGlobalSection
 EndGlobal

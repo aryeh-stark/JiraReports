@@ -1,18 +1,18 @@
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Jql;
+namespace JiraReportsClient.Entities.Issues;
 
-    public class ParentIssueFields
-    {
-        [JsonPropertyName("summary")]
-        public string Summary { get; set; }
+public class ParentIssueFields
+{
+    [JsonPropertyName("summary")] 
+    public string Summary { get; set; }
 
-        [JsonPropertyName("status")]
-        public Status Status { get; set; }
+    [JsonPropertyName("status")] 
+    public Status Status { get; set; }
 
-        [JsonPropertyName("priority")]
-        public Priority Priority { get; set; }
+    [JsonPropertyName("priority")]
+    public Priority Priority { get; set; }
 
-        [JsonPropertyName("issuetype")]
-        public IssueType IssueType { get; set; }
-    }
+    [JsonPropertyName("issuetype")] 
+    public IssueType IssueType { get; set; }
+}

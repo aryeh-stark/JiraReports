@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace JiraCmdLineTool.Common.Objects.SprintReports;
+namespace JiraReportsClient.Entities.Reports.SprintReports;
 
 public class SprintIssue
 {
@@ -75,7 +74,7 @@ public class SprintIssue
     public string Epic { get; set; }
 
     [JsonPropertyName("epicField")]
-    public EpicField EpicField { get; set; }
+    public JiraEpic JiraEpic { get; set; }
 
     [JsonPropertyName("currentEstimateStatistic")]
     public EstimateStatistic CurrentEstimateStatistic { get; set; }

@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using JiraReportsClient.Entities.Projects;
 using JiraReportsClient.Entities.Sprints;
 
-namespace JiraReportsClient.Entities.Jql;
+namespace JiraReportsClient.Entities.Issues;
 
 public class IssueFields
     {

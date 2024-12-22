@@ -1,4 +1,4 @@
-namespace JiraReportsClient.Http.Fluent;
+namespace JiraReportsClient.Http.EndpointFluentBuilder;
 
 public static class PaginationExtensions
 {

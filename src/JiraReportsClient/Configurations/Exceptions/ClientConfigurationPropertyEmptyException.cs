@@ -2,10 +2,9 @@ using JiraReportsClient.Exceptions;
 
 namespace JiraReportsClient.Configurations.Exceptions;
 
-public class ClientConfigurationPropertyNotNumberException(string fileName, string propertyName, string? propertyValue) 
-    : ClientConfigurationException($"The property '{propertyName}' is not a number. Value: [{propertyValue}]", ExceptionTypes.ConfigurationMissingProperties)
+public class ClientConfigurationPropertyEmptyException<T>(string propertyName, string sectionPath) 
+    : ClientConfigurationException($"Required configuration value '{propertyName}' of type '{typeof(T).Name}' in section '{sectionPath}' is missing or invalid.", ExceptionTypes.ConfigurationPropertyEmpty)
 {
-    public string FileName { get; } = fileName;
     public string PropertyName { get; } = propertyName;
-    public string? PropertyValue { get; } = propertyValue;
+    public string SectionPath { get; } = sectionPath;
 }

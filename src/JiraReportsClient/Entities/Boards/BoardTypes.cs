@@ -1,4 +1,4 @@
-namespace JiraCmdLineTool.Common.Objects.Boards;
+namespace JiraReportsClient.Entities.Boards;
 
 public enum BoardTypes
 {

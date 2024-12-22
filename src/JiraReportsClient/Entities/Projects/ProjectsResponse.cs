@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace JiraCmdLineTool.Common.Objects.Projects;
+namespace JiraReportsClient.Entities.Projects;
 
 public class ProjectsResponse
 {

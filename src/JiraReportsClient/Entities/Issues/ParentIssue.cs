@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Jql;
+namespace JiraReportsClient.Entities.Issues;
 
     public class ParentIssue
     {

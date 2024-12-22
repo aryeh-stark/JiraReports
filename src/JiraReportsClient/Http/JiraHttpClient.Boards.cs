@@ -3,59 +3,23 @@ using System.Text;
 using System.Text.Json;
 using JiraReportsClient.Configurations;
 using JiraReportsClient.Entities.Boards;
-using JiraReportsClient.Http.Fluent;
+using JiraReportsClient.Http.EndpointFluentBuilder;
 using JiraReportsClient.Logging;
 using Serilog;
 
 namespace JiraReportsClient.Http;
 
-public class JiraHttpClient
+public partial class JiraHttpClient
 {
-    #region Fields
-
-    private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _jsonOptions;
-    private readonly ClientConfiguration _config;
-    private readonly ILogger _logger;
-    private readonly JiraEndpointBuilder _endpointBuilder;
-
-    #endregion
-
-    #region Properties
-
-    private string BaseUrl => _config.BaseUrl;
-    private int MaxResults => _config.MaxResults;
-
-    #endregion
-
-    public JiraHttpClient(ILogger logger, ClientConfiguration config)
-    {
-        _logger = logger;
-        _config = config;
-        _endpointBuilder = new JiraEndpointBuilder(BaseUrl, MaxResults);
-
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-        };
-
-        _httpClient = new HttpClient();
-        var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_config.UserEmail}:{_config.ApiToken}"));
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
-
-        _logger.Debug($"JiraHttpClient created with {_config}");
-    }
-
-
     #region Boards
 
-    public async Task<List<Board>> GetBoardsAsync(string projectKey)
+    public async Task<List<Board>> GetBoardsForProjectAsync(string projectKey)
     {
         var isLastPage = false;
         var boards = new List<Board>();
         var endpointBuilder = _endpointBuilder.Boards()
             .ForProject(projectKey)
-            .WithPagination(-_config.MaxResults, _config.MaxResults);
+            .WithPagination();
         do
         {
             var endpoint = endpointBuilder.BuildNextPage();
@@ -72,6 +36,7 @@ public class JiraHttpClient
 
             if (!response.IsSuccessStatusCode)
             {
+                var message = await response.Content.ReadAsStringAsync();
                 _logger
                     .WithProjectKey(projectKey)
                     .WithEndpoint(endpoint)
@@ -79,8 +44,9 @@ public class JiraHttpClient
                     .WithStatusCode(response.StatusCode)
                     .WithCallStep(CallSteps.AfterCall)
                     .WithRange(endpointBuilder)
+                    .WithErrorResponse(message)
                     .Error(string.Empty);
-                throw new JiraGetBoardsException(projectKey, endpoint, response.StatusCode);
+                throw new JiraGetBoardsForProjectException(projectKey, endpoint, response.StatusCode);
             }
 
             var content = await response.Content.ReadAsStringAsync();
@@ -114,6 +80,130 @@ public class JiraHttpClient
 
         return boards;
     }
+    
+    public async Task<Board?> GetBoardByIdAsync(int boardId)
+    {
+        var endpoint =_endpointBuilder.Boards()
+            .ById(boardId)
+            .Build();
+
+        _logger
+            .WithBoardId(boardId)
+            .WithEndpoint(endpoint)
+            .WithAction()
+            .WithCallStep(CallSteps.BeforeCall)
+            .Debug("");
+
+        var response = await _httpClient.GetAsync(endpoint);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await response.Content.ReadAsStringAsync();
+            _logger
+                .WithBoardId(boardId)
+                .WithEndpoint(endpoint)
+                .WithAction()
+                .WithStatusCode(response.StatusCode)
+                .WithCallStep(CallSteps.AfterCall)
+                .WithErrorResponse(message)
+                .Error("");
+            throw new JiraGetBoardByIdException(boardId, endpoint, response.StatusCode);
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        var board = JsonSerializer.Deserialize<Board>(content, _jsonOptions);
+
+        if (board == null)
+        {
+            _logger
+                .WithBoardId(boardId)
+                .WithEndpoint(endpoint)
+                .WithAction()
+                .WithStatusCode(response.StatusCode)
+                .WithCallStep(CallSteps.AfterCall)
+                .Error("");
+            throw new JiraGetBoardByIdDeserializationException(boardId, endpoint, response.StatusCode);
+        }
+        
+        _logger
+            .WithBoardId(boardId)
+            .WithEndpoint(endpoint)
+            .WithAction()
+            .WithStatusCode(response.StatusCode)
+            .WithCallStep(CallSteps.AfterDeserialization)
+            .Debug($"Content Length: {content.Length}");
+        return board;
+    }
+    
+    public async Task<List<Board>> GetBoardsAsync()
+    {
+        var boardsCollection = new List<Board>();
+        var endpointBuilder = _endpointBuilder.Boards()
+            .WithPagination();
+        var isLastPage = false;
+        do
+        {
+            var endpoint = endpointBuilder.BuildNextPage();
+
+            _logger
+                .WithEndpoint(endpoint)
+                .WithAction()
+                .WithCallStep(CallSteps.BeforeCall)
+                .WithRange(endpointBuilder)
+                .Debug("");
+
+            var response = await _httpClient.GetAsync(endpoint);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var message = await response.Content.ReadAsStringAsync();
+                _logger
+                    .WithEndpoint(endpoint)
+                    .WithAction()
+                    .WithStatusCode(response.StatusCode)
+                    .WithCallStep(CallSteps.AfterCall)
+                    .WithRange(endpointBuilder)
+                    .WithErrorResponse(message)
+                    .Error(string.Empty);
+                throw new JiraGetBoardsException(endpoint, response.StatusCode);
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var boardsResponse = JsonSerializer.Deserialize<BoardsResponse>(content, _jsonOptions);
+
+            isLastPage = (boardsResponse?.IsLast).GetValueOrDefault(true);
+            if (boardsResponse?.Values != null)
+            {
+                boardsCollection.AddRange(boardsResponse.Values);
+                _logger
+                    .WithEndpoint(endpoint)
+                    .WithAction()
+                    .WithStatusCode(response.StatusCode)
+                    .WithCallStep(CallSteps.AfterCall)
+                    .WithRange(endpointBuilder)
+                    .Debug($"Is Last Page: {isLastPage}. Count: {boardsResponse.Values.Count} Content Length: {content.Length}");
+            }
+            else
+            {
+                _logger
+                    .WithEndpoint(endpoint)
+                    .WithAction()
+                    .WithStatusCode(response.StatusCode)
+                    .WithCallStep(CallSteps.AfterCall)
+                    .WithRange(endpointBuilder)
+                    .Error($"Is Last Page: {isLastPage}. Content Length: {content.Length}");
+            }
+        } while (!isLastPage);
+
+        _logger.Debug($"Total boards: {boardsCollection.Count}");
+        return boardsCollection;
+    }
+    
+    public async Task<(bool, Board? board)> IsBoardScrum(int boardId)
+    {
+        var board = await GetBoardByIdAsync(boardId);
+        return (board is { Type: BoardTypes.Scrum }, board);
+    }  
 
     #endregion
 }

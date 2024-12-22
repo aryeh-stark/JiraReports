@@ -1,5 +1,5 @@
 using System.Text.Json;
-using JiraReportsClient.Entities.Jql;
+using JiraReportsClient.Entities.Issues;
 using JiraReportsClient.Logging;
 
 namespace JiraReportsClient.Http;

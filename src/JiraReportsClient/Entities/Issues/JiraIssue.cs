@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Jql;
+namespace JiraReportsClient.Entities.Issues;
 
-[DebuggerDisplay("{Key} - {Fields.IssueType.Name}")]
+[DebuggerDisplay($"[{{Key}}] [{{Fields.IssueType.Name}}] {{Fields.Summary}}")]
 public class JiraIssue
     {
         [JsonPropertyName("id")]

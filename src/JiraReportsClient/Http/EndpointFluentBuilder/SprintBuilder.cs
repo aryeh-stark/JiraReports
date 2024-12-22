@@ -1,4 +1,4 @@
-namespace JiraReportsClient.Http.Fluent;
+namespace JiraReportsClient.Http.EndpointFluentBuilder;
 
 public class SprintBuilder(string baseUrl, int maxResults) 
     : JiraEndpointBuilderBase<SprintBuilder>(baseUrl, maxResults), IPaginatedBuilder

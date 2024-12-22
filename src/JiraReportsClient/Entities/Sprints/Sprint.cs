@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using JiraReportsClient.Entities.Boards;
 
 namespace JiraReportsClient.Entities.Sprints;
 
-public class JiraSprint
+[DebuggerDisplay("Sprint: {Name} ({Id})")]
+public class Sprint
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }

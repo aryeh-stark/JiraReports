@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using JiraCmdLineTool.Common.Objects.Outputs;
 
-namespace JiraCmdLineTool.Common.Objects.SprintReports;
+namespace JiraReportsClient.Entities.Reports.SprintReports;
 
 public class SprintReportContents
 {

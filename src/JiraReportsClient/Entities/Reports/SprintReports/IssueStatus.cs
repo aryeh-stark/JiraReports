@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace JiraCmdLineTool.Common.Objects.SprintReports;
+namespace JiraReportsClient.Entities.Reports.SprintReports;
 
 public class IssueStatus
 {

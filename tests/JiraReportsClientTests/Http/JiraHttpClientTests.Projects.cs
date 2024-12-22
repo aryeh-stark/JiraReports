@@ -1,6 +1,13 @@
+using FluentAssertions;
+
 namespace JiraReportsClientTests.Http;
 
-public class JiraHttpClientTests_Projects
+public partial class JiraHttpClientTests
 {
-    
+    [Fact]
+    public async Task GetProjectsAsyncTest()
+    {
+        var projects = await Client.GetProjectsAsync();
+        projects.Should().NotBeNullOrEmpty();
+    }
 }

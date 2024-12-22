@@ -1,4 +1,4 @@
-namespace JiraCmdLineTool.Common.Objects.Outputs;
+namespace JiraReportsClient.Entities.Reports.SprintReports;
 
 public static class ReportStatusValues
 {

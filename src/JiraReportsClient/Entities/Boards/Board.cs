@@ -1,8 +1,9 @@
-using System.Text.Json;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace JiraCmdLineTool.Common.Objects.Boards;
+namespace JiraReportsClient.Entities.Boards;
 
+[DebuggerDisplay("{Type} Board: {Name} ({Id})")]
 public class Board
 {   
     [JsonPropertyName("id")]
@@ -17,14 +18,6 @@ public class Board
     [JsonPropertyName("type")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public BoardTypes Type { get; set; }
-
-    public string TypeText
-    {
-        get
-        {
-            return Type.ToString();
-        }
-    }
 
     [JsonPropertyName("location")]
     public BoardLocation Location { get; set; }

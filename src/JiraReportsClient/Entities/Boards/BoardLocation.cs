@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace JiraCmdLineTool.Common.Objects.Boards;
+namespace JiraReportsClient.Entities.Boards;
 
 public class BoardLocation
 {

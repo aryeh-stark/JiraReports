@@ -1,4 +1,4 @@
-namespace JiraReportsClient.Http.Fluent;
+namespace JiraReportsClient.Http.EndpointFluentBuilder;
 
 public class ReportsBuilder(string baseUrl, int maxResults) 
     : JiraEndpointBuilderBase<ReportsBuilder>(baseUrl, maxResults), IPaginatedBuilder
