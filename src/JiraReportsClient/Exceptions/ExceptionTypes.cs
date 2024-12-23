@@ -36,6 +36,8 @@ public enum ExceptionTypes
     HttpGetSprintReportError = 60,
     HttpGetSprintReportForBoardAndSprintError,
     HttpGetSprintReportForBoardAndSprintDeserializationError,
+    HttpGetSprintBurndownForBoardAndSprintError,
+    HttpGetSprintBurndownForBoardAndSprintDeserializationError,
     
     NotScrumBoardError = 201,
 }

@@ -263,6 +263,37 @@ public class JiraGetSprintReportForBoardAndSprintDeserializationException(int bo
     public int SprintId { get; init; } = sprintId;
 }
 
+public class JiraGetSprintBurndownForBoardAndSprintException(
+    string response,
+    int boardId,
+    int sprintId,
+    string endpoint, 
+    HttpStatusCode statusCode)
+    : JiraHttpClientException(
+        $"Failed to get sprint burndown for board '{boardId}' and sprint '{sprintId}'. Response: {response}",
+        endpoint,
+        statusCode,
+        ExceptionTypes.HttpGetSprintBurndownForBoardAndSprintError)
+{
+    public int BoardId { get; } = boardId;
+    public int SprintId { get; } = sprintId;
+}
+
+public class JiraGetSprintBurndownForBoardAndSprintDeserializationException(
+    int boardId,
+    int sprintId,
+    string endpoint, 
+    HttpStatusCode statusCode)
+    : JiraHttpClientException(
+        $"Failed to deserialize sprint burndown for board '{boardId}' and sprint '{sprintId}'.",
+        endpoint,
+        statusCode,
+        ExceptionTypes.HttpGetSprintBurndownForBoardAndSprintDeserializationError)
+{
+    public int BoardId { get; } = boardId;
+    public int SprintId { get; } = sprintId;
+}
+
 public class JiraNotScrumBoardException(int boardId) : JiraReportsClientException(
     $"The board id '`{boardId}' is not SCRUM", ExceptionTypes.NotScrumBoardError)
 {
