@@ -16,7 +16,7 @@ public static class JiraLoggingTemplates
         "- CallStep: {CallStep}",
         "- StatusCode: {StatusCode}",
         "- RequestUrl: {RequestUrl}",
-        "- ProjectId: {Project d}",
+        "- ProjectId: {ProjectId}",
         "- Range: [{StartAt} to {MaxResults}]",
         "- Error Response: {ErrorResponse}",
         "- Exception: {Exception}{NewLine}").Replace("#", "{NewLine}");

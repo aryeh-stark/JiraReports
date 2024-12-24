@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Reports.SprintReports;
+namespace JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
 
 public class StatusCategory
 {

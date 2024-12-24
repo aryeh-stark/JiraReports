@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Reports.SprintReports;
+namespace JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
 
+[DebuggerDisplay("{Key} - {Summary}")]
 public class SprintIssue
 {
     [JsonPropertyName("id")]

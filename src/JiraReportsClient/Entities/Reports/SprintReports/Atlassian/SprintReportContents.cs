@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace JiraReportsClient.Entities.Reports.SprintReports;
+namespace JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
 
 public class SprintReportContents
 {
@@ -25,30 +25,6 @@ public class SprintReportContents
             .ToList();
     }
 
-    public string GetReportStatus(string issueKey)
-    {
-        if (CompletedIssues.Any(i => i.Key == issueKey))
-        {
-            return ReportStatusValues.CompletedIssues;
-        }
-
-        if (IssuesNotCompletedInCurrentSprint.Any(i => i.Key == issueKey))
-        {
-            return ReportStatusValues.IssuesNotCompleted;
-        }
-
-        if (PuntedIssues.Any(i => i.Key == issueKey))
-        {
-            return ReportStatusValues.IssuesRemovedFromSprint;
-        }
-
-        if (IssuesCompletedInAnotherSprint.Any(i => i.Key == issueKey))
-        {
-            return ReportStatusValues.IssuesCompletedOutsideOfThisSprint;
-        }
-
-        return "Not Found";
-    }
 
     [JsonPropertyName("completedIssues")]
     public List<SprintIssue> CompletedIssues { get; set; }

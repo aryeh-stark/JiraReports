@@ -1,6 +1,7 @@
 using System.Text.Json;
 using JiraReportsClient.Entities.Reports.SprintBurndowns;
 using JiraReportsClient.Entities.Reports.SprintReports;
+using JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
 using JiraReportsClient.Logging;
 
 namespace JiraReportsClient.Http;
@@ -36,7 +37,7 @@ public partial class JiraHttpClient
                 .WithBoardId(boardId)
                 .WithSprintId(sprintId)
                 .WithCallStep(CallSteps.AfterCall)
-                .Error("");
+                .Error($"Content Length: {message.Length}");
             throw new JiraGetSprintReportForBoardAndSprintException(message, boardId, sprintId, endpoint, response.StatusCode);
         }
 
