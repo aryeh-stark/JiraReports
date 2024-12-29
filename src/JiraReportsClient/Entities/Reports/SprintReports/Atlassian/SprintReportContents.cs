@@ -4,39 +4,35 @@ namespace JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
 
 public class SprintReportContents
 {
-    public List<string> GetAllSprintIssueIds()
+    public HashSet<string> GetAllSprintIssueIds()
     {
-        return GetAllSprintIssues()
+        var allIssueIds = GetAllSprintIssues()
             .Select(i => i.Key)
-            .OrderBy(x => x)
-            .ToList();
+            .ToHashSet();
+        return allIssueIds;
     }
-    
-    public List<SprintIssue> GetAllSprintIssues()
+    public List<SprintIssueDetails> GetAllSprintIssues()
     {
-        var allIssues = new List<SprintIssue>();
-        allIssues.AddRange(CompletedIssues);
-        allIssues.AddRange(IssuesNotCompletedInCurrentSprint);
-        allIssues.AddRange(PuntedIssues);
-        allIssues.AddRange(IssuesCompletedInAnotherSprint);
-        return allIssues
-            .OrderBy(i => i.Key)
-            .Distinct()
-            .ToList();
+        var allIssues =
+            CompletedIssues
+                .Concat(IssuesNotCompletedInCurrentSprint)
+                .Concat(PuntedIssues)
+                .ToList();
+        return allIssues;
     }
 
 
     [JsonPropertyName("completedIssues")]
-    public List<SprintIssue> CompletedIssues { get; set; }
+    public List<SprintIssueDetails> CompletedIssues { get; set; }
 
     [JsonPropertyName("issuesNotCompletedInCurrentSprint")]
-    public List<SprintIssue> IssuesNotCompletedInCurrentSprint { get; set; }
+    public List<SprintIssueDetails> IssuesNotCompletedInCurrentSprint { get; set; }
 
     [JsonPropertyName("puntedIssues")]
-    public List<SprintIssue> PuntedIssues { get; set; }
+    public List<SprintIssueDetails> PuntedIssues { get; set; }
 
     [JsonPropertyName("issuesCompletedInAnotherSprint")]
-    public List<SprintIssue> IssuesCompletedInAnotherSprint { get; set; }
+    public List<SprintIssueDetails> IssuesCompletedInAnotherSprint { get; set; }
 
     [JsonPropertyName("completedIssuesInitialEstimateSum")]
     public EstimateSum CompletedIssuesInitialEstimateSum { get; set; }

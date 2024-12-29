@@ -1,17 +1,11 @@
-using System.Diagnostics;
-using System.Text.Json.Serialization;
-
 namespace JiraReportsClient.Entities.Issues;
 
-[DebuggerDisplay("{Name}")]
-public class IssueType
+public enum IssueType
 {
-    [JsonPropertyName("id")] 
-    public string Id { get; set; }
-
-    [JsonPropertyName("name")] 
-    public string Name { get; set; }
-
-    [JsonPropertyName("hierarchyLevel")] 
-    public int? HierarchyLevel { get; set; }
+    Undefined = -1,
+    Epic = 1,
+    Story,
+    Task,
+    Bug,
+    SubTask
 }

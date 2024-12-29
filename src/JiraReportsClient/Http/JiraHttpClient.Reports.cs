@@ -1,4 +1,6 @@
 using System.Text.Json;
+using JiraReportsClient.Entities.Boards;
+using JiraReportsClient.Entities.Issues;
 using JiraReportsClient.Entities.Reports.SprintBurndowns;
 using JiraReportsClient.Entities.Reports.SprintReports;
 using JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
@@ -8,7 +10,9 @@ namespace JiraReportsClient.Http;
 
 public partial class JiraHttpClient
 {
-    public async Task<SprintReport?> GetSprintReportAsync(int boardId, int sprintId)
+   
+
+    public async Task<SprintReportResponse?> GetSprintReportAsync(int boardId, int sprintId)
     {
         // Get the sprint report
         var endpoint = _endpointBuilder
@@ -16,7 +20,7 @@ public partial class JiraHttpClient
             .ForBoard(boardId)
             .ForSprint(sprintId)
             .BuildSprintReport();
-        
+
         _logger
             .WithEndpoint(endpoint)
             .WithAction()
@@ -38,12 +42,14 @@ public partial class JiraHttpClient
                 .WithSprintId(sprintId)
                 .WithCallStep(CallSteps.AfterCall)
                 .Error($"Content Length: {message.Length}");
-            throw new JiraGetSprintReportForBoardAndSprintException(message, boardId, sprintId, endpoint, response.StatusCode);
+            throw new JiraGetSprintReportForBoardAndSprintException(message, boardId, sprintId, endpoint,
+                response.StatusCode);
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        var sprintReport = JsonSerializer.Deserialize<SprintReport>(content, _jsonOptions);
-        if (sprintReport == null || sprintReport?.Contents == null || sprintReport?.Contents.GetAllSprintIssues().Count == 0)
+        var sprintReport = JsonSerializer.Deserialize<SprintReportResponse>(content, _jsonOptions);
+        if (sprintReport == null || sprintReport?.Contents == null ||
+            sprintReport?.Contents.GetAllSprintIssues().Count == 0)
         {
             _logger
                 .WithEndpoint(endpoint)
@@ -53,9 +59,10 @@ public partial class JiraHttpClient
                 .WithSprintId(sprintId)
                 .WithCallStep(CallSteps.AfterDeserialization)
                 .Error($"Content Length: {content.Length}");
-            throw new JiraGetSprintReportForBoardAndSprintDeserializationException(boardId, sprintId, endpoint, response.StatusCode);
+            throw new JiraGetSprintReportForBoardAndSprintDeserializationException(boardId, sprintId, endpoint,
+                response.StatusCode);
         }
-        
+
         _logger
             .WithEndpoint(endpoint)
             .WithAction()
@@ -67,7 +74,7 @@ public partial class JiraHttpClient
 
         return sprintReport;
     }
-    
+
     public async Task<SprintBurndown?> GetSprintBurndownAsync(int boardId, int sprintId)
     {
         var endpoint = _endpointBuilder
@@ -83,7 +90,7 @@ public partial class JiraHttpClient
             .WithSprintId(sprintId)
             .WithCallStep(CallSteps.BeforeCall)
             .Debug("");
-        
+
         var response = await _httpClient.GetAsync(endpoint);
 
         if (!response.IsSuccessStatusCode)
@@ -97,12 +104,13 @@ public partial class JiraHttpClient
                 .WithBoardId(boardId)
                 .WithSprintId(sprintId)
                 .Error("");
-            throw new JiraGetSprintBurndownForBoardAndSprintException(message, boardId, sprintId, endpoint, response.StatusCode);
+            throw new JiraGetSprintBurndownForBoardAndSprintException(message, boardId, sprintId, endpoint,
+                response.StatusCode);
         }
 
         var content = await response.Content.ReadAsStringAsync();
         var sprintBurndown = JsonSerializer.Deserialize<SprintBurndown>(content, _jsonOptions);
-        
+
         if (sprintBurndown == null)
         {
             _logger
@@ -113,9 +121,10 @@ public partial class JiraHttpClient
                 .WithSprintId(sprintId)
                 .WithCallStep(CallSteps.AfterDeserialization)
                 .Error($"Content Length: {content.Length}");
-            throw new JiraGetSprintBurndownForBoardAndSprintDeserializationException(boardId, sprintId, endpoint, response.StatusCode);
+            throw new JiraGetSprintBurndownForBoardAndSprintDeserializationException(boardId, sprintId, endpoint,
+                response.StatusCode);
         }
-        
+
         _logger
             .WithEndpoint(endpoint)
             .WithAction()

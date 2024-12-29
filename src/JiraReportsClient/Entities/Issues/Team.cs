@@ -1,26 +1,14 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using JiraReportsClient.Entities.Issues.Json;
 
 namespace JiraReportsClient.Entities.Issues;
 
 [DebuggerDisplay("{Name}")]
-public class Team
+[JsonConverter(typeof(TeamJsonConverter))]
+public class Team(string? id, string? name)
 {
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [JsonPropertyName("avatarUrl")]
-    public string AvatarUrl { get; set; }
-
-    [JsonPropertyName("isVisible")]
-    public bool IsVisible { get; set; }
-
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
-
-    [JsonPropertyName("isShared")]
-    public bool IsShared { get; set; }
+    [JsonIgnore]
+    public string? Id { get; set; } = id;
+    public string? Name { get; set; } = name;
 }

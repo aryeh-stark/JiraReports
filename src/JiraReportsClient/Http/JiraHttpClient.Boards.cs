@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using JiraReportsClient.Configurations;
 using JiraReportsClient.Entities.Boards;
+using JiraReportsClient.Entities.Boards.Atlassian;
 using JiraReportsClient.Http.EndpointFluentBuilder;
 using JiraReportsClient.Logging;
 using Serilog;
@@ -11,12 +12,10 @@ namespace JiraReportsClient.Http;
 
 public partial class JiraHttpClient
 {
-    #region Boards
-
-    public async Task<List<Board>> GetBoardsForProjectAsync(string projectKey)
+    public async Task<List<JiraBoard>> GetBoardsForProjectAsync(string projectKey)
     {
         var isLastPage = false;
-        var boards = new List<Board>();
+        var boards = new List<JiraBoard>();
         var endpointBuilder = _endpointBuilder.Boards()
             .ForProject(projectKey)
             .WithPagination();
@@ -50,7 +49,7 @@ public partial class JiraHttpClient
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var boardsResponse = JsonSerializer.Deserialize<BoardsResponse>(content, _jsonOptions);
+            var boardsResponse = JsonSerializer.Deserialize<JiraBoardsResponse>(content, _jsonOptions);
 
             isLastPage = (boardsResponse?.IsLast).GetValueOrDefault(true);
             if (boardsResponse?.Values != null)
@@ -81,7 +80,7 @@ public partial class JiraHttpClient
         return boards;
     }
     
-    public async Task<Board?> GetBoardByIdAsync(int boardId)
+    public async Task<JiraBoard?> GetBoardByIdAsync(int boardId)
     {
         var endpoint =_endpointBuilder.Boards()
             .ById(boardId)
@@ -111,7 +110,7 @@ public partial class JiraHttpClient
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        var board = JsonSerializer.Deserialize<Board>(content, _jsonOptions);
+        var board = JsonSerializer.Deserialize<JiraBoard>(content, _jsonOptions);
 
         if (board == null)
         {
@@ -135,9 +134,9 @@ public partial class JiraHttpClient
         return board;
     }
     
-    public async Task<List<Board>> GetBoardsAsync()
+    public async Task<List<JiraBoard>> GetBoardsAsync()
     {
-        var boardsCollection = new List<Board>();
+        var boardsCollection = new List<JiraBoard>();
         var endpointBuilder = _endpointBuilder.Boards()
             .WithPagination();
         var isLastPage = false;
@@ -169,7 +168,7 @@ public partial class JiraHttpClient
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var boardsResponse = JsonSerializer.Deserialize<BoardsResponse>(content, _jsonOptions);
+            var boardsResponse = JsonSerializer.Deserialize<JiraBoardsResponse>(content, _jsonOptions);
 
             isLastPage = (boardsResponse?.IsLast).GetValueOrDefault(true);
             if (boardsResponse?.Values != null)
@@ -199,11 +198,10 @@ public partial class JiraHttpClient
         return boardsCollection;
     }
     
-    public async Task<(bool, Board? board)> IsBoardScrum(int boardId)
+    public async Task<(bool, JiraBoard? board)> IsBoardScrum(int boardId)
     {
         var board = await GetBoardByIdAsync(boardId);
         return (board is { Type: BoardTypes.Scrum }, board);
     }  
 
-    #endregion
 }

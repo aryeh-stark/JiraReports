@@ -7,26 +7,29 @@ public class ClientConfiguration
 {
     private const string JiraSectionName = "Jira";
 
-    private static readonly IEnumerable<string> AppSettingsPropertyNames =
-    [
+    // Properties which must be present in the "Jira" section
+    private static readonly IEnumerable<string> AppSettingsPropertyNames = new[]
+    {
         "BaseURL",
         "UserEmail",
         "ApiToken",
         "MaxResults",
         "JqlChunkSize"
-    ];
+    };
 
-    private static readonly IEnumerable<string> AppSettingsNumericPropertyNames =
-    [
+    // Properties that must be numeric
+    private static readonly IEnumerable<string> AppSettingsNumericPropertyNames = new[]
+    {
         "MaxResults",
         "JqlChunkSize"
-    ];
+    };
 
     public string BaseUrl { get; }
     public string UserEmail { get; }
     public string ApiToken { get; }
     public int MaxResults { get; }
     public int JqlChunkSize { get; }
+    public CustomFieldMappingConfiguration CustomFieldMapping { get; }
 
     public ClientConfiguration()
     {
@@ -35,14 +38,21 @@ public class ClientConfiguration
         ApiToken = string.Empty;
         MaxResults = 0;
         JqlChunkSize = 0;
+        CustomFieldMapping = new CustomFieldMappingConfiguration();
     }
 
-    public ClientConfiguration(string baseUrl, string userEmail, string apiToken, int maxResults,
-        int jqlChunkSize)
+    public ClientConfiguration(
+        string baseUrl,
+        string userEmail,
+        string apiToken,
+        int maxResults,
+        int jqlChunkSize,
+        CustomFieldMappingConfiguration customFieldMapping)
     {
         ArgumentNullException.ThrowIfNull(baseUrl);
         ArgumentNullException.ThrowIfNull(userEmail);
         ArgumentNullException.ThrowIfNull(apiToken);
+        ArgumentNullException.ThrowIfNull(customFieldMapping);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxResults);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(jqlChunkSize);
 
@@ -51,6 +61,7 @@ public class ClientConfiguration
         ApiToken = apiToken;
         MaxResults = maxResults;
         JqlChunkSize = jqlChunkSize;
+        CustomFieldMapping = customFieldMapping;
     }
 
     public override string ToString()
@@ -60,10 +71,12 @@ public class ClientConfiguration
             $"UserEmail: {UserEmail}",
             $"ApiToken (Length): {ApiToken.Length}",
             $"MaxResults: {MaxResults}",
-            $"JqlChunkSize: {JqlChunkSize}");
+            $"JqlChunkSize: {JqlChunkSize}",
+            $"CustomFieldMapping: {string.Join("; ", CustomFieldMapping.Mapping.Select(kv => $"{kv.Key} => {kv.Value}"))}"
+        );
+
         return $"[{content}]";
     }
-
 
     public static ClientConfiguration LoadFromAppSettings()
     {
@@ -78,38 +91,60 @@ public class ClientConfiguration
         var configuration = new ConfigurationBuilder()
             .AddJsonFile(fileName, optional: false, reloadOnChange: false)
             .Build();
+
         return LoadFromConfiguration(fileName, configuration);
     }
 
     private static ClientConfiguration LoadFromConfiguration(string fileName, IConfigurationRoot configuration)
     {
+        // Get the "Jira" section
         var section = configuration.GetSection(JiraSectionName);
         if (section == null)
             throw new ClientConfigurationMissingJsonSectionException(fileName);
 
+        // Check if required properties are missing
         var missingProperties = AppSettingsPropertyNames
-            .Where(x => section[x] == null || String.IsNullOrEmpty(x))
+            .Where(propName => section[propName] == null || string.IsNullOrEmpty(section[propName]))
             .ToArray();
+
         if (missingProperties.Length > 0)
         {
             throw new ClientConfigurationMissingPropertiesException(fileName, missingProperties);
         }
 
+        // Fetch required values
         var baseUrl = section.GetRequiredValue("BaseURL");
         var userEmail = section.GetRequiredValue("UserEmail");
         var token = section.GetRequiredValue("ApiToken");
 
-        AppSettingsNumericPropertyNames.ToList().ForEach(propertyName =>
+        // Verify numeric properties
+        foreach (var numericPropertyName in AppSettingsNumericPropertyNames)
         {
-            if (!int.TryParse(section[propertyName], out _))
-                throw new ClientConfigurationPropertyNotNumberException(fileName, propertyName, section[propertyName]);
-        });
+            if (!int.TryParse(section[numericPropertyName], out _))
+            {
+                throw new ClientConfigurationPropertyNotNumberException(
+                    fileName,
+                    numericPropertyName,
+                    section[numericPropertyName]
+                );
+            }
+        }
 
         var maxResults = int.Parse(section["MaxResults"]!);
         var jqlChunkSize = int.Parse(section["JqlChunkSize"]!);
 
-        var clientConfiguration =
-            new ClientConfiguration(baseUrl!, userEmail!, token!, maxResults, jqlChunkSize);
-        return clientConfiguration;
+        var customFieldMappingSection = section.GetSection("CustomFieldMapping");
+        var customFieldMapping = new CustomFieldMappingConfiguration();
+        customFieldMappingSection.Bind(customFieldMapping);
+
+        // Create final configuration object
+        return new ClientConfiguration(
+            baseUrl!,
+            userEmail!,
+            token!,
+            maxResults,
+            jqlChunkSize,
+            customFieldMapping
+        );
     }
 }

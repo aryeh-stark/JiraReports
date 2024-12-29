@@ -18,6 +18,15 @@ public partial class JiraHttpClientTests
         
         var sprintReport = await Client.GetSprintReportAsync(84, lastClosedSprint!.Id);
         sprintReport.Should().NotBeNull();
+        
+        var sprintReportIssues = sprintReport!.Contents.GetAllSprintIssueIds();
+        sprintReportIssues.Should().NotBeEmpty();
+        
+        var issues = await Client.GetIssuesForSprintAsync(lastClosedSprint!.Id);
+        issues.Should().NotBeEmpty();
+        
+        issues.TrueForAll(i => sprintReportIssues.Contains(i.Key)).Should().BeTrue();
+        
     }
     
     [Fact]
@@ -34,8 +43,5 @@ public partial class JiraHttpClientTests
         
         var sprintBurndown = await Client.GetSprintBurndownAsync(84, lastClosedSprint!.Id);
         sprintBurndown.Should().NotBeNull();
-
-        var s = sprintBurndown!.IssueChanges;
-        s.Should().NotBeEmpty();
     }
 }

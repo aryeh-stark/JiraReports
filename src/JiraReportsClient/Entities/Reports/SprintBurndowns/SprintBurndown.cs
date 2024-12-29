@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JiraReportsClient.Entities.Issues;
 
 namespace JiraReportsClient.Entities.Reports.SprintBurndowns;
 
@@ -6,15 +7,6 @@ public class SprintBurndown
 {
     [JsonPropertyName("changes")]
     public Dictionary<long, List<Change>> Changes { get; set; }
-
-
-    public Dictionary<string, List<IssueChange>> IssueChanges
-    {
-        get
-        {
-            return BurndownProcessor.RestructureBurndownData(Changes);
-        }
-    }
 
     [JsonPropertyName("startTime")]
     public long StartTime { get; set; }

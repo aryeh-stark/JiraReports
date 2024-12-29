@@ -1,4 +1,5 @@
 using FluentAssertions;
+using JiraReportsClient.Entities.Sprints;
 
 namespace JiraReportsClientTests.Http;
 
@@ -7,8 +8,17 @@ public partial class JiraHttpClientTests
     [Fact]
     public async Task TestGetSprintsAsyncTest()
     {
-        var sprints = await Client.GetSprintsForBoardIdAsync(84);
+        var jiraSprints = await Client.GetSprintsForBoardIdAsync(84);
+        jiraSprints.Should().NotBeNullOrEmpty();
+        
+        var sprints = jiraSprints.ToSprintsList();
         sprints.Should().NotBeNullOrEmpty();
+        
+        var jiraSprint = await Client.GetJiraSprintByIdAsync(sprints.First().Id);
+        jiraSprint.Should().NotBeNull();
+        
+        var sprint = jiraSprint.ToModel();
+        sprint.Should().NotBeNull();
     }
     
     [Fact]

@@ -1,10 +1,13 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using JiraReportsClient.Configurations;
 using JiraReportsClient.Entities.Boards;
+using JiraReportsClient.Entities.Issues.Atlassian.Json;
 using JiraReportsClient.Http.EndpointFluentBuilder;
 using JiraReportsClient.Logging;
+using JiraReportsClient.Utils.Json.Converters;
 using Serilog;
 
 namespace JiraReportsClient.Http;
@@ -39,7 +42,12 @@ public partial class JiraHttpClient
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
+            NumberHandling = JsonNumberHandling.AllowReadingFromString
         };
+        
+        // Add the converter factory
+        _jsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        _jsonOptions.Converters.Add(new IssueFieldsConverterFactory(config.CustomFieldMapping.Mapping));
 
         _httpClient = new HttpClient();
         var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_config.UserEmail}:{_config.ApiToken}"));

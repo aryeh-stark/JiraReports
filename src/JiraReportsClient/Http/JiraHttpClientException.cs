@@ -208,6 +208,17 @@ public class JiraGetProjectsDeserializationException(
     }
 }
 
+public class JiraGetIssueByIdException(
+    string responseMessage,
+    string issueId,
+    string endpoint,
+    HttpStatusCode statusCode)
+    : JiraHttpClientException(
+        $"Failed to get issue by Id '{issueId}. Response Message: {responseMessage}",
+        endpoint,
+        statusCode,
+        ExceptionTypes.HttpGetIssueByIdError);
+
 public class JiraGetIssuesByIdsException(
     string responseMessage,
     IEnumerable<string> issueIds,

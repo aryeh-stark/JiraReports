@@ -1,7 +1,10 @@
 using System.Text.Json;
 using JiraReportsClient.Entities.Boards;
+using JiraReportsClient.Entities.Boards.Atlassian;
 using JiraReportsClient.Entities.Issues;
+using JiraReportsClient.Entities.Issues.Atlassian;
 using JiraReportsClient.Entities.Sprints;
+using JiraReportsClient.Entities.Sprints.Atlassian;
 using JiraReportsClient.Http.EndpointFluentBuilder;
 using JiraReportsClient.Logging;
 
@@ -9,7 +12,7 @@ namespace JiraReportsClient.Http;
 
 public partial class JiraHttpClient
 {
-    public async Task<List<Sprint>> GetSprintsForBoardIdAsync(int boardId,
+    public async Task<List<JiraSprint>> GetSprintsForBoardIdAsync(int boardId,
         bool includeFutureSprints = false,
         bool includeActiveSprints = false,
         bool includeClosedSprints = false)
@@ -18,13 +21,12 @@ public partial class JiraHttpClient
         if (isScrumBoard == false)
             throw new JiraNotScrumBoardException(boardId);
 
-        bool isLastPage = false;
         var sprintsEndpointBuilder = _endpointBuilder.Sprints()
             .ForBoard(boardId)
             .IncludeStates(future: includeFutureSprints, active: includeActiveSprints, closed: includeClosedSprints)
             .WithPagination();
-        var sprintList = new List<Sprint>();
-        bool lastPage = false;
+        var sprintList = new List<JiraSprint>();
+        var lastPage = false;
         do
         {
             var endpoint = sprintsEndpointBuilder.BuildNextPage();
@@ -59,14 +61,14 @@ public partial class JiraHttpClient
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
-                var sprintsResponse = JsonSerializer.Deserialize<SprintResponse>(content, _jsonOptions);
+                var sprintsResponse = JsonSerializer.Deserialize<JiraSprintResponse>(content, _jsonOptions);
 
                 if (sprintsResponse == null || !sprintsResponse.HasValues())
                     throw new JiraGetSprintsForBoardDeserializationException(boardId, endpoint, response.StatusCode);
 
                 sprintList.AddRange(sprintsResponse.Values.Select(s =>
                 {
-                    s.Board = board!;
+                    s.JiraBoard = board!;
                     return s;
                 }));
                 lastPage = sprintsResponse.IsLast;
@@ -82,7 +84,6 @@ public partial class JiraHttpClient
                         closed: includeClosedSprints)
                     .Debug(
                         $"Is Last Page: {sprintsResponse.IsLast}. Count: {sprintsResponse.Count} Content Length: {content.Length}");
-                isLastPage = lastPage;
             }
             catch (Exception ex)
             {
@@ -95,14 +96,14 @@ public partial class JiraHttpClient
                     .Error("Error while getting sprints");
                 throw;
             }
-        } while (!isLastPage);
+        } while (!lastPage);
 
         return sprintList
             .OrderByDescending(x => x.EndDate)
             .ToList();
     }
 
-    public async Task<Sprint> GetJiraSprintAsync(int sprintId)
+    public async Task<JiraSprint> GetJiraSprintByIdAsync(int sprintId, JiraBoard? jiraBoard = null)
     {
         var endpoint = _endpointBuilder.Sprints()
             .ForSprint(sprintId)
@@ -133,14 +134,19 @@ public partial class JiraHttpClient
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var sprint = JsonSerializer.Deserialize<Sprint>(content, _jsonOptions);
+        var jiraSprint = JsonSerializer.Deserialize<JiraSprint>(content, _jsonOptions);
 
-        if (sprint == null)
+        if (jiraSprint == null)
         {
             throw new JiraGetSprintByIdDeserializationException(sprintId, endpoint, response.StatusCode);
         }
 
-        return sprint;
+        if (jiraBoard == null)
+        {
+            jiraBoard = await GetBoardByIdAsync(jiraSprint.OriginBoardId);
+        }
+        jiraSprint.JiraBoard = jiraBoard;
+        return jiraSprint;
     }
     
     public async Task<List<JiraIssue>> GetIssuesForSprintAsync(int sprintId)

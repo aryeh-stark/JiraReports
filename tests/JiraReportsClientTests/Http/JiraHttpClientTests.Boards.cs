@@ -2,18 +2,21 @@ using JiraReportsClient.Configurations;
 using JiraReportsClient.Http;
 using FluentAssertions;
 using Serilog;
+using JiraReportsClient.Entities.Boards;
 
 namespace JiraReportsClientTests.Http;
 
 public partial class JiraHttpClientTests
 {
-
-    
     [Fact]
     public async Task TestGetBoardsForProjectAsync()
     {
-        var boards = await Client.GetBoardsForProjectAsync("EW");
+        var jiraBoards = await Client.GetBoardsForProjectAsync("EW");
+        jiraBoards.Should().NotBeEmpty();
+        
+        var boards = jiraBoards.ToBoardList();
         boards.Should().NotBeEmpty();
+        
     }
     
     [Fact]
@@ -32,5 +35,19 @@ public partial class JiraHttpClientTests
     {
         var boards = await Client.GetBoardsAsync();
         boards.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task IsBoardScrumTest()
+    {
+        var boards = await Client.GetBoardsAsync();
+        boards.Should().NotBeEmpty();
+        
+        var scrumBoard = boards.FirstOrDefault(b => b.Type == BoardTypes.Scrum);
+        scrumBoard.Should().NotBeNull();
+
+        var (isScrumBoard, board) = await Client.IsBoardScrum(scrumBoard!.Id);
+        isScrumBoard.Should().BeTrue();
+        board.Should().NotBeNull();
     }
 }
