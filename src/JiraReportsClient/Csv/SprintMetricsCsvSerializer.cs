@@ -1,62 +1,28 @@
 using System.Text;
 using JiraReportsClient.Entities.Reports.SprintReports;
+using CsvHelper;
+using System.Globalization;
+using System.IO;
+using CsvHelper.Configuration;
+using JiraReportsClient.Entities.Reports.SprintReports.Metrics;
 
 namespace JiraReportsClient.Csv;
 
 public static class SprintMetricsCsvSerializer 
 {
-    public static string Serialize(IEnumerable<SprintReportEnriched> sprintReports)
+    public static string Serialize(params SprintReportEnriched[] sprintReports)
     {
-        var csv = new StringBuilder();
-        
-        // Headers
-        csv.AppendLine("Sprint," +
-                       "Planned Count,Planned Days,Planned Done Count,Planned Done Days,Planned Done % (Count),Planned Done % (Time)," +
-                       "Unplanned Count,Unplanned Days,Unplanned Done Count,Unplanned Done Days,Unplanned Done % (Count),Unplanned Done % (Time)," +
-                       "Total Count,Total Days,Total Done Count,Total Done Days,Total Done % (Count),Total Done % (Time)," +
-                       "Cancelled Count,Cancelled Days," +
-                       "Removed Count,Removed Days," +
-                       "Total Done from Planned % (Count),Total Done from Planned % (Time)");
-
-        foreach (var report in sprintReports)
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            var metrics = report.Metrics;
-            var sprint = report.Sprint?.Name ?? "Unknown";
+            HasHeaderRecord = true,
+        });
 
-            csv.AppendLine(
-                $"{sprint}," +
-                // Planned
-                $"{metrics.Planned.PlannedCount}," +
-                $"{metrics.Planned.PlannedTime?.Days?.Value ?? 0:F2}," +
-                $"{metrics.Planned.PlannedDoneCount}," +
-                $"{metrics.Planned.PlannedDoneTime?.Days?.Value ?? 0:F2}," +
-                $"{metrics.Planned.PlannedDonePercentageByCount?.Value ?? 0:F2}," +
-                $"{metrics.Planned.PlannedDonePercentageByTime?.Value ?? 0:F2}," +
-                // Unplanned
-                $"{metrics.Unplanned.UnplannedCount}," +
-                $"{metrics.Unplanned.UnplannedTime?.Days?.Value ?? 0:F2}," +
-                $"{metrics.Unplanned.UnplannedDoneCount}," +
-                $"{metrics.Unplanned.UnplannedDoneTime?.Days?.Value ?? 0:F2}," +
-                $"{metrics.Unplanned.UnplannedDonePercentageByCount?.Value ?? 0:F2}," +
-                $"{metrics.Unplanned.UnplannedDonePercentageByTime?.Value ?? 0:F2}," +
-                // Total
-                $"{metrics.Total.TotalCount}," +
-                $"{metrics.Total.TotalTime?.Days?.Value ?? 0:F2}," +
-                $"{metrics.Total.TotalDoneCount}," +
-                $"{metrics.Total.TotalDoneTime?.Days?.Value ?? 0:F2}," +
-                $"{metrics.Total.TotalDonePercentageByCount?.Value ?? 0:F2}," +
-                $"{metrics.Total.TotalDonePercentageByTime?.Value ?? 0:F2}," +
-                // Cancelled
-                $"{metrics.Cancelled.CancelledCount}," +
-                $"{metrics.Cancelled.CancelledTime?.Days?.Value ?? 0:F2}," +
-                // Removed
-                $"{metrics.Removed.RemovedCount}," +
-                $"{metrics.Removed.RemovedTime?.Days?.Value ?? 0:F2}," +
-                // Total Done from Planned
-                $"{metrics.PercentageTotalDoneFromPlannedByCount:F2}," +
-                $"{metrics.PercentageTotalDoneFromPlannedByTime:F2}");
-        }
+        var records = sprintReports
+            .Select(report => new SprintMetricsRecord(report.Metrics))
+            .ToList();
 
-        return csv.ToString();
+        csv.WriteRecords(records);
+        return writer.ToString();
     }
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using JiraReportsClient.Entities.Boards;
 using JiraReportsClient.Entities.Boards.Atlassian;
 using JiraReportsClient.Entities.Sprints.Atlassian;
@@ -10,6 +11,9 @@ namespace JiraReportsClient.Entities.Sprints;
 public class Sprint
 {
     public int Id { get; set; }
+
+    public string SequenceId => GetSprintSequenceId(this);
+
     public SprintState? State { get; set; }
     public string Name { get; set; }
     public string Goal { get; set; }
@@ -44,5 +48,12 @@ public class Sprint
 
         // If the end date is in the past or within today, return 0, otherwise cast to int.
         return daysLeft > 0 ? (int)daysLeft : 0;
+    }
+    
+    private static string GetSprintSequenceId(Sprint sprint)
+    {
+        var match = Regex.Match(sprint.Name, @"\d{2}S\d{2}$");
+        var sprintId = match.Success ? match.Value : sprint.Name;
+        return sprintId;
     }
 }

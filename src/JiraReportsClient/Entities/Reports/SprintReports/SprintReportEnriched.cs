@@ -72,7 +72,7 @@ public class SprintReportEnriched
             .ToList();
         
         Issues = reportIssuesLocalCache.Values.ToList();
-        Metrics = new SprintMetrics(Issues);
+        Metrics = new SprintMetrics(sprint, Issues);
         
         ReportIssue EnrichIssue(Issue issue, ReportIssueType type) 
         {
@@ -124,7 +124,7 @@ public class SprintReportEnriched
         RemovedAfterSprintStart = RemovedIssues.Where(i => i.HasFlag(ReportIssueType.Planned)).ToList();
         AddedAndRemovedAfterSprintStart = RemovedIssues.Where(i => i.HasFlag(ReportIssueType.Unplanned)).ToList();
         IssueChanges = issueChanges;
-        Metrics = new SprintMetrics(Issues);
+        Metrics = new SprintMetrics(sprint, Issues);
     }
     
     public IDictionary<string, UserSprintReportEnriched> GroupByUser()
