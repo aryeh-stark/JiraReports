@@ -7,7 +7,7 @@ namespace JiraReportsClient.Entities.Issues;
 [DebuggerDisplay("[{Key}] [{Type}] {Summary}")]
 public class Issue
 {
-    [JsonIgnore]
+    //[JsonIgnore]
     public int Id { get; set; }
     public string? Key { get; set; }
     public string? Summary { get; set; }

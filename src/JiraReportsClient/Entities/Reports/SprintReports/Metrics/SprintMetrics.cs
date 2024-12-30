@@ -1,4 +1,5 @@
 using JiraReportsClient.Entities.Issues;
+using JiraReportsClient.Utils.Structs;
 
 namespace JiraReportsClient.Entities.Reports.SprintReports.Metrics;
 
@@ -24,6 +25,9 @@ public class SprintMetrics(
     {
     }
     
-    public double PercentageTotalDoneFromPlannedByCount => 
-        Planned.PlannedCount > 0 ? Total.TotalDoneCount / Planned.PlannedCount * 100 : 0.0;
+    public FixedDouble PercentageTotalDoneFromPlannedByCount => 
+        Planned.PlannedCount > 0 ? (double)Total.TotalDoneCount / (double)Planned.PlannedCount * 100.0d : 0.0d;
+    
+    public FixedDouble PercentageTotalDoneFromPlannedByTime => 
+        Planned.PlannedTime > 0 ? Total.TotalDoneTime / Planned.PlannedTime * 100.0d : 0.0d;
 }

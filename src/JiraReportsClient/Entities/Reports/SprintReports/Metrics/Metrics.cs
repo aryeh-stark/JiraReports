@@ -23,11 +23,11 @@ public abstract class MetricsStart
         StartTimeEstimate = StartIssues.Sum(EstimationSelector);
     }
 
-    protected double EstimationSelector(ReportIssue i) => i.EstimationSeconds ?? 0;
+    protected static double EstimationSelector(ReportIssue i) => i.EstimationSeconds ?? 0;
     protected bool DefaultStartIssuesFilter(ReportIssue reportIssue) => ReportTypes.Any(reportIssue.HasFlag);
 }
 
-[DebuggerDisplay("[{ReportType}] {StartIssuesCount}/{EndIssuesCount}, ({StartTimeEstimate.Days}d, {EndTimeEstimate.Days}d)")]
+[DebuggerDisplay("[{ReportType}] {StartIssuesCount}/{EndIssuesCount}(Done), ({StartTimeEstimate.Days}d, {EndTimeEstimate.Days}d)")]
 public abstract class MetricsEnd : MetricsStart
 {
     protected IReadOnlyList<ReportIssue> EndIssues { get; }
@@ -48,10 +48,10 @@ public abstract class MetricsEnd : MetricsStart
     protected bool DefaultEndIssuesFilter(ReportIssue reportIssue) =>
         reportIssue.HasFlag(ReportIssueType.Done) || reportIssue.HasFlag(ReportIssueType.Cancelled);
 
-    public FixedDouble PercentageEndByCount => StartIssuesCount > 0 ? (double)EndIssuesCount / StartIssuesCount * 100 : 0.0;
+    public FixedDouble PercentageEndByCount => StartIssuesCount > 0 ? (double)EndIssuesCount / StartIssuesCount * 100d : 0.0d;
 
     public FixedDouble PercentageDoneByTime =>
-        StartTimeEstimate > 0 ? EndTimeEstimate / StartTimeEstimate * 100 : 0.0;
+        StartTimeEstimate > 0 ? (double)EndTimeEstimate / (double)StartTimeEstimate * 100d : 0.0d;
 }
 
 public class PlannedMetrics(
@@ -60,11 +60,11 @@ public class PlannedMetrics(
 {
     public int PlannedCount => StartIssuesCount;
     public EstimationTime PlannedTime => StartTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> PlannedIssues => StartIssues;
     public int PlannedDoneCount => EndIssuesCount;
     public EstimationTime PlannedDoneTime => EndTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> PlannedDoneIssues => EndIssues;
     public FixedDouble PlannedDonePercentageByCount => PercentageEndByCount;
     public FixedDouble PlannedDonePercentageByTime => PercentageDoneByTime;
@@ -76,11 +76,11 @@ public class UnplannedMetrics(
 {
     public int UnplannedCount => StartIssuesCount;
     public EstimationTime UnplannedTime => StartTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> UnplannedIssues => StartIssues;
     public int UnplannedDoneCount => EndIssuesCount;
     public EstimationTime UnplannedDoneTime => EndTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> UnplannedDoneIssues => EndIssues;
     public FixedDouble UnplannedDonePercentageByCount => PercentageEndByCount;
     public FixedDouble UnplannedDonePercentageByTime => PercentageDoneByTime;
@@ -92,11 +92,11 @@ public class TotalMetrics(
 {
     public int TotalCount => StartIssuesCount;
     public EstimationTime TotalTime => StartTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> TotalIssues => StartIssues;
     public int TotalDoneCount => EndIssuesCount;
     public EstimationTime TotalDoneTime => EndTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> TotalDoneIssues => EndIssues;
     public FixedDouble TotalDonePercentageByCount => PercentageEndByCount;
     public FixedDouble TotalDonePercentageByTime => PercentageDoneByTime;
@@ -108,7 +108,7 @@ public class CancelledMetrics(
 {
     public int CancelledCount => StartIssuesCount;
     public EstimationTime CancelledTime => StartTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> CancelledIssues => StartIssues;
 }
 
@@ -118,6 +118,6 @@ public class RemovedMetrics(
 {
     public int RemovedCount => StartIssuesCount;
     public EstimationTime RemovedTime => StartTimeEstimate;
-    [JsonIgnore]
+    //[JsonIgnore]
     public IEnumerable<ReportIssue> RemovedIssues => StartIssues;
 }

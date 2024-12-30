@@ -30,6 +30,8 @@ public class EstimationTime
     public static implicit operator EstimationTime(double seconds) => new(seconds);
 
     public static implicit operator FixedDouble(EstimationTime estimation) => estimation._timeInSeconds;
+    public static implicit operator double(EstimationTime estimation) => estimation._timeInSeconds;
+    public static implicit operator EstimationTime(FixedDouble fixedDouble) => new(fixedDouble);
 
     // Comparison operators with another EstimationTime
     public static bool operator >(EstimationTime a, EstimationTime b) => a._timeInSeconds > b._timeInSeconds;
@@ -59,5 +61,8 @@ public class EstimationTime
         return a._timeInSeconds / b._timeInSeconds;
     }
 
+    public static EstimationTime operator +(EstimationTime a, EstimationTime b) => a._timeInSeconds + b._timeInSeconds;
+    public static EstimationTime operator +(EstimationTime a, int seconds) => a._timeInSeconds + seconds;
+    
     public override string ToString() => $"Time: {Seconds} seconds ({Hours} hours, {Days} days)";
 }

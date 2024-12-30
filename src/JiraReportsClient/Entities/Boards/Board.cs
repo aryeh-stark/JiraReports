@@ -17,6 +17,4 @@ public class Board
     {
         return jiraBoard.ToBoardModel();
     }
-
-    
 }

@@ -7,5 +7,6 @@ public enum IssueType
     Story,
     Task,
     Bug,
-    SubTask
+    SubTask,
+    CSBug,
 }

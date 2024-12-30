@@ -9,7 +9,7 @@ namespace JiraReportsClient.Entities.Reports.SprintReports;
 
 public class SprintReportEnriched
 {
-    public Board Board => Sprint.Board;
+   public Board Board => Sprint.Board;
     public Sprint Sprint { get; }
     public IReadOnlyList<ReportIssue> Issues { get; }
 
@@ -30,7 +30,7 @@ public class SprintReportEnriched
     public IReadOnlyDictionary<string, IReadOnlyList<IssueChange>> IssueChanges { get;  }
 
     public SprintMetrics Metrics { get; }
-    
+
     public SprintReportEnriched(
         Sprint sprint,
         IEnumerable<Issue>? issues,
@@ -41,7 +41,7 @@ public class SprintReportEnriched
     {
         var reportIssuesLocalCache = issues?
             .ToDictionary(i => i.Key, i => new ReportIssue(i, ReportIssueType.Unspecified)) ?? new Dictionary<string, ReportIssue>()!;
-        
+        var userByName = new Dictionary<string, User>();
         Sprint = sprint;
         CompletedIssues = completedIssues != null ? EnrichIssues(completedIssues, ReportIssueType.Done) : [];
         IncompleteIssues = incompleteIssues != null ? EnrichIssues(incompleteIssues, ReportIssueType.NotDone) : [];
@@ -74,9 +74,20 @@ public class SprintReportEnriched
         Issues = reportIssuesLocalCache.Values.ToList();
         Metrics = new SprintMetrics(Issues);
         
-        // Local function to enrich ReportIssueType
         ReportIssue EnrichIssue(Issue issue, ReportIssueType type) 
         {
+            if (issue.Assignee == null)
+            {
+                if (!userByName.TryGetValue(issue.Assignee?.Name ?? "", out var user))
+                {
+                    userByName[user.Name] = user;
+                }
+                else
+                {
+                    issue.Assignee = user;
+                }
+            }
+
             if (!reportIssuesLocalCache.TryGetValue(issue.Key, out var reportIssue))
             {
                 reportIssue = new ReportIssue(issue, type);
@@ -94,5 +105,34 @@ public class SprintReportEnriched
         {
             return issuesEnumerable.Select(i => EnrichIssue(i, type)).ToList();
         }
+    }
+    
+    protected SprintReportEnriched(
+        Func<ReportIssue, bool> predicate,
+        Sprint sprint, 
+        IReadOnlyList<ReportIssue> issues, 
+        IReadOnlyDictionary<string, IReadOnlyList<IssueChange>> issueChanges)
+    {
+        Sprint = sprint;
+        Issues = issues.Where(predicate).ToList();
+        CompletedIssues = Issues.Where(i => i.HasFlag(ReportIssueType.Done)).ToList();
+        IncompleteIssues = Issues.Where(i => i.HasFlag(ReportIssueType.NotDone)).ToList();
+        RemovedIssues = Issues.Where(i => i.HasFlag(ReportIssueType.Removed)).ToList();
+        CancelledIssues = Issues.Where(i => i.HasFlag(ReportIssueType.Cancelled)).ToList();
+        PlannedIssues = Issues.Where(i => i.HasFlag(ReportIssueType.Planned)).ToList();
+        AddedAfterSprintStart = Issues.Where(i => i.HasFlag(ReportIssueType.Unplanned)).ToList();
+        RemovedAfterSprintStart = RemovedIssues.Where(i => i.HasFlag(ReportIssueType.Planned)).ToList();
+        AddedAndRemovedAfterSprintStart = RemovedIssues.Where(i => i.HasFlag(ReportIssueType.Unplanned)).ToList();
+        IssueChanges = issueChanges;
+        Metrics = new SprintMetrics(Issues);
+    }
+    
+    public IDictionary<string, UserSprintReportEnriched> GroupByUser()
+    {
+        var users = Issues
+            .Where(i => i.Assignee != null)
+            .GroupBy(i => i.Assignee!.Name)
+            .ToDictionary(g => g.Key!, g => new UserSprintReportEnriched(g.Select(i => i.Assignee).FirstOrDefault(), this));
+        return users;
     }
 }

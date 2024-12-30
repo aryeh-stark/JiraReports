@@ -3,9 +3,9 @@ using JiraReportsClient.Utils.Json.Converters;
 
 namespace JiraReportsClient.Utils.Structs;
 
-public struct FixedDouble : IEquatable<FixedDouble>
+[JsonConverter(typeof(FixedDoubleJsonConverter))]
+public class FixedDouble : IEquatable<FixedDouble>
 {
-    [JsonConverter(typeof(FixedDoubleJsonConverter))]
     public double Value { get; set; }
 
     public FixedDouble(double value)
@@ -31,9 +31,6 @@ public struct FixedDouble : IEquatable<FixedDouble>
     public static bool operator <=(FixedDouble a, FixedDouble b) => a.Value <= b.Value;
     public static bool operator ==(FixedDouble a, FixedDouble b) => a.Value == b.Value;
     public static bool operator !=(FixedDouble a, FixedDouble b) => a.Value != b.Value;
-    
-
-
     
     public override bool Equals(object? obj)
     {

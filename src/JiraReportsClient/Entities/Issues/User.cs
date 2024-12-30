@@ -16,8 +16,8 @@ public class User
     }
 
     public string? Name { get; set; }
-    [JsonIgnore]
+    //[JsonIgnore]
     public string? Id { get; set; }
-    [JsonIgnore]
+    //[JsonIgnore]
     public string? Email { get; set; }
 }

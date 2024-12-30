@@ -8,7 +8,7 @@ namespace JiraReportsClient.Entities.Issues;
 [JsonConverter(typeof(TeamJsonConverter))]
 public class Team(string? id, string? name)
 {
-    [JsonIgnore]
+    //[JsonIgnore]
     public string? Id { get; set; } = id;
     public string? Name { get; set; } = name;
 }
