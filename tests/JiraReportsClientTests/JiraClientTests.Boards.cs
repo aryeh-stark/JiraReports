@@ -19,13 +19,6 @@ public partial class JiraClientTests
         board.Should().NotBeNull();
     }
 
-    // [Fact]
-    // public async Task GetBoardsAsyncTest()
-    // {
-    //     var boards = await Client.GetBoardsAsync();
-    //     boards.Should().NotBeEmpty();
-    // }
-
     [Fact]
     public async Task IsBoardScrumTest()
     {
