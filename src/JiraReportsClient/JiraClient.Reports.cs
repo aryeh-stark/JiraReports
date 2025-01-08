@@ -1,3 +1,4 @@
+using JiraReportsClient.Entities.Boards;
 using JiraReportsClient.Entities.Issues;
 using JiraReportsClient.Entities.Reports.SprintBurndowns;
 using JiraReportsClient.Entities.Reports.SprintReports;
@@ -7,12 +8,14 @@ namespace JiraReportsClient;
 
 public partial class JiraClient
 {
-    public async Task<SprintReportEnriched?> GetSprintReportEnrichedAsync(int boardId, int sprintId)
+    public async Task<SprintReportEnriched?> GetSprintReportEnrichedAsync(Board? board, int sprintId)
     {
+        if (board == null) return null;
+        
         // Start the tasks concurrently
-        var jiraSprintTask = client.GetJiraSprintByIdAsync(sprintId);
-        var sprintReportTask = client.GetSprintReportAsync(boardId, sprintId);
-        var sprintBurndownTask = client.GetSprintBurndownAsync(boardId, sprintId);
+        var jiraSprintTask = client.GetJiraSprintByIdAsync(sprintId, board.ToJiraBoardModel());
+        var sprintReportTask = client.GetSprintReportAsync(board.Id, sprintId);
+        var sprintBurndownTask = client.GetSprintBurndownAsync(board.Id, sprintId);
 
         // Await all tasks to complete
         await Task.WhenAll(jiraSprintTask, sprintReportTask, sprintBurndownTask);
@@ -21,13 +24,18 @@ public partial class JiraClient
         var jiraSprint = jiraSprintTask.Result;
         var sprintReportResponse = sprintReportTask.Result;
         var sprintBurndown = sprintBurndownTask.Result;
+        
+        if (sprintReportResponse?.HasIssues() is not true) return null;
 
         // Extract issue IDs
-        var issueIds = sprintReportResponse?.Contents.GetAllSprintIssueIds();
+        var issueIds = sprintReportResponse?.Contents?.GetAllSprintIssueIds();
+        if (issueIds == null || issueIds.Count == 0) return null;
 
         // Fetch issues by IDs and convert them to models
-        var issues = await client.GetIssuesByIdsAsync(issueIds)
-            .ContinueWith(issuesList => issuesList.Result.Select(i => i.ToModel()).ToList());
+        var jiraIssues = await client.GetIssuesByIdsAsync(issueIds);
+        if (jiraIssues.Count == 0) return null;
+        var issues = jiraIssues.Select(i => i.ToModel()).ToList();
+            
 
         // Create dictionaries and process results
         var issueByKey = issues.ToDictionary(i => i.Key);

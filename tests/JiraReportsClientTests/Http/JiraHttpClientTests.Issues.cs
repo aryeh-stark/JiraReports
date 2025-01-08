@@ -15,7 +15,8 @@ public partial class JiraHttpClientTests
     [Fact]
     public async Task GetIssuesByIdsAsyncTest()
     {
-        var sprints = await Client.GetSprintsForBoardIdAsync(84);
+        var board = await Client.GetBoardByIdAsync(84);
+        var sprints = await Client.GetSprintsForBoardAsync(board);
         sprints.Should().NotBeEmpty();
         
         var lastClosedSprint = sprints

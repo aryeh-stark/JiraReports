@@ -23,6 +23,12 @@ public class Sprint
     public DateTime? CompleteDate { get; set; }
     public DateTime CreatedDate { get; set; }
     public Board Board { get; set; }
+    
+    public bool IsValidSequenceId()
+    {
+        var match = Regex.Match(this.Name, SprintSequenceIdPattern);
+        return match.Success;
+    }
 
     public static implicit operator Sprint(JiraSprint jiraSprint)
     {
@@ -50,9 +56,10 @@ public class Sprint
         return daysLeft > 0 ? (int)daysLeft : 0;
     }
     
+    private static string SprintSequenceIdPattern => @"\d{2}S\d{2}$";
     private static string GetSprintSequenceId(Sprint sprint)
     {
-        var match = Regex.Match(sprint.Name, @"\d{2}S\d{2}$");
+        var match = Regex.Match(sprint.Name, SprintSequenceIdPattern);
         var sprintId = match.Success ? match.Value : sprint.Name;
         return sprintId;
     }

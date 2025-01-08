@@ -60,7 +60,7 @@ public static class JiraLoggingFluentExtension
 
     public static ILogger WithIssueKeys(this ILogger logger, string[] issueKeys)
     {
-        return logger.WithProperty("IssueKeys", string.Join(", ", issueKeys));
+        return logger.WithProperty("IssuesKeys", string.Join(", ", issueKeys));
     }
 
     public static ILogger WithProjectId(this ILogger logger, int projectId)

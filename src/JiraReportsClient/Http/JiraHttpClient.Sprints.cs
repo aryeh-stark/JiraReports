@@ -17,12 +17,25 @@ public partial class JiraHttpClient
         bool includeActiveSprints = false,
         bool includeClosedSprints = false)
     {
-        var (isScrumBoard, board) = await IsBoardScrum(boardId);
-        if (isScrumBoard == false)
+        var board = await GetBoardByIdAsync(boardId);
+        if (board != null && board.Type != BoardTypes.Scrum)
             throw new JiraNotScrumBoardException(boardId);
 
+        var sprints = await GetSprintsForBoardAsync(board, includeFutureSprints, includeActiveSprints,
+            includeClosedSprints);
+        return sprints;
+    }
+    
+    public async Task<List<JiraSprint>> GetSprintsForBoardAsync(Board board,
+        bool includeFutureSprints = false,
+        bool includeActiveSprints = false,
+        bool includeClosedSprints = false)
+    {
+        if (board is not { Type: BoardTypes.Scrum })
+            throw new JiraNotScrumBoardException(board.Id);
+
         var sprintsEndpointBuilder = _endpointBuilder.Sprints()
-            .ForBoard(boardId)
+            .ForBoard(board.Id)
             .IncludeStates(future: includeFutureSprints, active: includeActiveSprints, closed: includeClosedSprints)
             .WithPagination();
         var sprintList = new List<JiraSprint>();
@@ -33,7 +46,7 @@ public partial class JiraHttpClient
             _logger
                 .WithEndpoint(endpoint)
                 .WithAction()
-                .WithBoardId(boardId)
+                .WithBoardId(board.Id)
                 .WithCallStep(CallSteps.BeforeCall)
                 .WithRange(sprintsEndpointBuilder)
                 .WithSprintStates(future: includeFutureSprints, active: includeActiveSprints,
@@ -49,7 +62,7 @@ public partial class JiraHttpClient
                     _logger
                         .WithEndpoint(endpoint)
                         .WithAction()
-                        .WithBoardId(boardId)
+                        .WithBoardId(board.Id)
                         .WithStatusCode(response.StatusCode)
                         .WithCallStep(CallSteps.AfterCall)
                         .WithRange(sprintsEndpointBuilder)
@@ -57,18 +70,18 @@ public partial class JiraHttpClient
                             closed: includeClosedSprints)
                         .WithErrorResponse(message)
                         .Error("");
-                    throw new JiraGetSprintsForBoardException(message, boardId, endpoint, response.StatusCode);
+                    throw new JiraGetSprintsForBoardException(message, board.Id, endpoint, response.StatusCode);
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
                 var sprintsResponse = JsonSerializer.Deserialize<JiraSprintResponse>(content, _jsonOptions);
 
                 if (sprintsResponse == null || !sprintsResponse.HasValues())
-                    throw new JiraGetSprintsForBoardDeserializationException(boardId, endpoint, response.StatusCode);
+                    throw new JiraGetSprintsForBoardDeserializationException(board.Id, endpoint, response.StatusCode);
 
                 sprintList.AddRange(sprintsResponse.Values.Select(s =>
                 {
-                    s.JiraBoard = board!;
+                    s.JiraBoard = board.ToJiraBoardModel();
                     return s;
                 }));
                 lastPage = sprintsResponse.IsLast;
@@ -76,7 +89,7 @@ public partial class JiraHttpClient
                 _logger
                     .WithEndpoint(endpoint)
                     .WithAction()
-                    .WithBoardId(boardId)
+                    .WithBoardId(board.Id)
                     .WithStatusCode(response.StatusCode)
                     .WithCallStep(CallSteps.AfterCall)
                     .WithRange(sprintsEndpointBuilder)
@@ -90,7 +103,7 @@ public partial class JiraHttpClient
                 _logger
                     .WithEndpoint(endpoint)
                     .WithAction()
-                    .WithBoardId(boardId)
+                    .WithBoardId(board.Id)
                     .WithException(ex)
                     .WithCallStep(CallSteps.Undefined)
                     .Error("Error while getting sprints");

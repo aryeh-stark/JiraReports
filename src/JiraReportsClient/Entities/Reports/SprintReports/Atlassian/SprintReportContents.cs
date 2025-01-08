@@ -21,6 +21,13 @@ public class SprintReportContents
         return allIssues;
     }
 
+    public bool HasIssues()
+    {
+        return CompletedIssues.Count != 0
+               || IssuesNotCompletedInCurrentSprint.Count != 0
+               || PuntedIssues.Count != 0;
+    }
+
 
     [JsonPropertyName("completedIssues")]
     public List<SprintIssueDetails> CompletedIssues { get; set; }

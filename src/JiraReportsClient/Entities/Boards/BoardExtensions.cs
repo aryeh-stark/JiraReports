@@ -5,8 +5,13 @@ namespace JiraReportsClient.Entities.Boards;
 
 public static class BoardExtensions
 {
-    public static Project ToProjectModel(this JiraBoardLocation boardLocation)
+    public static Project? ToProjectModel(this JiraBoardLocation? boardLocation)
     {
+        if (boardLocation == null)
+        {
+            return null;
+        }
+        
         return new Project
         {
             Id = boardLocation.ProjectId.GetValueOrDefault(-1),
@@ -23,7 +28,24 @@ public static class BoardExtensions
             Name = jiraBoard.Name,
             Type = jiraBoard.Type,
             IsPrivate = jiraBoard.IsPrivate,
-            Project = jiraBoard.Location.ToProjectModel(),
+            Project = jiraBoard.Location?.ToProjectModel(),
+        };
+    }
+    
+    public static JiraBoard ToJiraBoardModel(this Board? board)
+    {
+        return new JiraBoard
+        {
+            Id = board.Id,
+            Name = board.Name,
+            Type = board.Type,
+            IsPrivate = board.IsPrivate,
+            Location = new JiraBoardLocation
+            {
+                ProjectId = board.Project?.Id,
+                ProjectKey = board.Project?.Key ?? string.Empty,
+                ProjectName = board.Project?.Name ?? string.Empty,
+            },
         };
     }
     

@@ -20,4 +20,7 @@ public class User
     public string? Id { get; set; }
     //[JsonIgnore]
     public string? Email { get; set; }
+    
+    
+    public static User Empty => new User("Unassigned User", Guid.Empty.ToString(), "void@dev.null");
 }

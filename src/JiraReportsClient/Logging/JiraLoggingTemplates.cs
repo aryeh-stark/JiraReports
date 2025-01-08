@@ -11,7 +11,7 @@ public static class JiraLoggingTemplates
         "- Board: {BoardId}",
         "- Sprint: {SprintId}",
         "- Issue: {IssueKey}",
-        "- Issues: {IssueKey}",
+        "- Issues: {IssuesKeys}",
         "- Action: {Action}",
         "- CallStep: {CallStep}",
         "- StatusCode: {StatusCode}",

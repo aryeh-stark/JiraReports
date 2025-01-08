@@ -5,7 +5,7 @@ namespace JiraReportsClient.Entities.Reports.SprintReports.Atlassian;
 public class SprintReportResponse
 {
     [JsonPropertyName("contents")]
-    public SprintReportContents Contents { get; set; }
+    public SprintReportContents? Contents { get; set; }
 
     [JsonPropertyName("sprint")]
     public SprintDetail Sprint { get; set; }
@@ -15,4 +15,9 @@ public class SprintReportResponse
 
     [JsonPropertyName("supportsPages")]
     public bool SupportsPages { get; set; }
+    
+    public bool HasIssues()
+    {
+        return Contents != null && Contents.HasIssues();
+    }
 }

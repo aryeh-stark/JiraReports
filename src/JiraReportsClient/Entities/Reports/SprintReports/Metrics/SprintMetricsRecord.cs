@@ -29,6 +29,10 @@ public class SprintMetricsRecord
     public double PercentageTotalDoneFromPlannedByCount { get; set; }
     public double PercentageTotalDoneFromPlannedByTime { get; set; }
 
+    public SprintMetricsRecord()
+    {
+    }
+
     public SprintMetricsRecord(SprintMetrics metrics)
     {
         SprintSequenceId = metrics.SprintSequenceId;
@@ -56,6 +60,42 @@ public class SprintMetricsRecord
         RemovedCount = metrics.Removed.RemovedCount;
         RemovedDays = metrics.Removed.RemovedTime?.Days?.Value ?? 0;
         PercentageTotalDoneFromPlannedByCount = metrics.PercentageTotalDoneFromPlannedByCount;
-        PercentageTotalDoneFromPlannedByTime= metrics.PercentageTotalDoneFromPlannedByTime;
+        PercentageTotalDoneFromPlannedByTime = metrics.PercentageTotalDoneFromPlannedByTime;
+    }
+
+    public SprintMetricsRecord(string sprintSequenceId, string boardName, int plannedCount, double plannedDays,
+        int plannedDoneCount, double plannedDoneDays, double plannedDonePercentageByCount,
+        double plannedDonePercentageByTime, int unplannedCount, double unplannedDays, int unplannedDoneCount,
+        double unplannedDoneDays, double unplannedDonePercentageByCount, double unplannedDonePercentageByTime,
+        int totalCount, double totalDays, int totalDoneCount, double totalDoneDays, double totalDonePercentageByCount,
+        double totalDonePercentageByTime, int cancelledCount, double cancelledDays, int removedCount,
+        double removedDays, double percentageTotalDoneFromPlannedByCount, double percentageTotalDoneFromPlannedByTime)
+    {
+        SprintSequenceId = sprintSequenceId;
+        BoardName = boardName;
+        PlannedCount = plannedCount;
+        PlannedDays = plannedDays;
+        PlannedDoneCount = plannedDoneCount;
+        PlannedDoneDays = plannedDoneDays;
+        PlannedDonePercentageByCount = plannedDonePercentageByCount;
+        PlannedDonePercentageByTime = plannedDonePercentageByTime;
+        UnplannedCount = unplannedCount;
+        UnplannedDays = unplannedDays;
+        UnplannedDoneCount = unplannedDoneCount;
+        UnplannedDoneDays = unplannedDoneDays;
+        UnplannedDonePercentageByCount = unplannedDonePercentageByCount;
+        UnplannedDonePercentageByTime = unplannedDonePercentageByTime;
+        TotalCount = totalCount;
+        TotalDays = totalDays;
+        TotalDoneCount = totalDoneCount;
+        TotalDoneDays = totalDoneDays;
+        TotalDonePercentageByCount = totalDonePercentageByCount;
+        TotalDonePercentageByTime = totalDonePercentageByTime;
+        CancelledCount = cancelledCount;
+        CancelledDays = cancelledDays;
+        RemovedCount = removedCount;
+        RemovedDays = removedDays;
+        PercentageTotalDoneFromPlannedByCount = percentageTotalDoneFromPlannedByCount;
+        PercentageTotalDoneFromPlannedByTime = percentageTotalDoneFromPlannedByTime;
     }
 }

@@ -7,7 +7,6 @@ namespace JiraReportsClient.Entities.Issues;
 [DebuggerDisplay("[{Key}] [{Type}] {Summary}")]
 public class Issue
 {
-    //[JsonIgnore]
     public int Id { get; set; }
     public string? Key { get; set; }
     public string? Summary { get; set; }
@@ -68,5 +67,33 @@ public class Issue
         Labels = issue.Labels;
         Parent = issue.Parent;
         StoryPoints = issue.StoryPoints;
+    }
+    
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as Issue);
+    }
+
+    public bool Equals(Issue? other)
+    {
+        if (other is null) return false;
+        return string.Equals(Key, other.Key, StringComparison.Ordinal);
+    }
+
+    public override int GetHashCode()
+    {
+        return Key?.GetHashCode(StringComparison.Ordinal) ?? 0;
+    }
+
+    public static bool operator ==(Issue? left, Issue? right)
+    {
+        if (ReferenceEquals(left, right)) return true;
+        if (left is null || right is null) return false;
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Issue? left, Issue? right)
+    {
+        return !(left == right);
     }
 }

@@ -9,12 +9,27 @@ namespace JiraReportsClient;
 
 public partial class JiraClient
 {
-  public async Task<List<Sprint>> GetSprintsForBoardIdAsync(int boardId,
+    public async Task<List<Sprint>> GetSprintsForBoardIdAsync(int boardId,
         bool includeFutureSprints = false,
         bool includeActiveSprints = false,
         bool includeClosedSprints = false)
     {
-        var jiraSprints = await client.GetSprintsForBoardIdAsync(boardId, includeFutureSprints, includeActiveSprints, includeClosedSprints);
+        var board = await client.GetBoardByIdAsync(boardId);
+        if (board != null && board.Type != BoardTypes.Scrum)
+            throw new JiraNotScrumBoardException(boardId);
+        
+        var sprints = await GetSprintsForBoardIdAsync(board, includeFutureSprints, includeActiveSprints,
+            includeClosedSprints);
+        return sprints;
+    }
+    
+    public async Task<List<Sprint>> GetSprintsForBoardIdAsync(Board board,
+        bool includeFutureSprints = false,
+        bool includeActiveSprints = false,
+        bool includeClosedSprints = false)
+    {
+        var jiraSprints = await client.GetSprintsForBoardAsync(board, includeFutureSprints, includeActiveSprints,
+            includeClosedSprints);
         var sprints = jiraSprints.ToSprintsList();
         return sprints;
     }
@@ -25,7 +40,7 @@ public partial class JiraClient
         var sprint = jiraSprint.ToModel();
         return sprint;
     }
-    
+
     public async Task<IReadOnlyList<Issue>> GetIssuesForSprintAsync(int sprintId)
     {
         var issues = await client.GetIssuesForSprintAsync(sprintId);

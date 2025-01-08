@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using JiraReportsClient.Entities.Boards;
 using JiraReportsClient.Entities.Issues;
 using JiraReportsClient.Entities.Reports.SprintBurndowns;
@@ -7,6 +8,7 @@ using JiraReportsClient.Entities.Sprints;
 
 namespace JiraReportsClient.Entities.Reports.SprintReports;
 
+[DebuggerDisplay("Sprint Report Enriched: {Sprint.Name}")]
 public class SprintReportEnriched
 {
    public Board Board => Sprint.Board;
@@ -39,31 +41,35 @@ public class SprintReportEnriched
         IEnumerable<Issue>? removedIssues,
         IReadOnlyDictionary<string, IReadOnlyList<IssueChange>>? issueChanges)
     {
-        var reportIssuesLocalCache = issues?
-            .ToDictionary(i => i.Key, i => new ReportIssue(i, ReportIssueType.Unspecified)) ?? new Dictionary<string, ReportIssue>()!;
-        var userByName = new Dictionary<string, User>();
+        var enumeratedIssues = issues?.ToList() ?? new List<Issue>();
+        var dictionary = enumeratedIssues
+            .Where(i => i.Key != null)
+            .ToDictionary(issue => issue.Key!, issue => new ReportIssue(issue, ReportIssueType.Unspecified));
+        var reportIssuesLocalCache = dictionary ?? new Dictionary<string, ReportIssue>()!;
+        Issues = reportIssuesLocalCache.Values.ToList();
         Sprint = sprint;
         CompletedIssues = completedIssues != null ? EnrichIssues(completedIssues, ReportIssueType.Done) : [];
         IncompleteIssues = incompleteIssues != null ? EnrichIssues(incompleteIssues, ReportIssueType.NotDone) : [];
         RemovedIssues = removedIssues != null ? EnrichIssues(removedIssues, ReportIssueType.Removed) : [];
-        CancelledIssues = issues.Where(i => i.IsCancelled()).Select(i => EnrichIssue(i, ReportIssueType.Cancelled)).ToList();
+        CancelledIssues = enumeratedIssues.Where(i => i.IsCancelled()).Select(i => EnrichIssue(i, ReportIssueType.Cancelled)).ToList();
         IssueChanges = issueChanges ?? new Dictionary<string, IReadOnlyList<IssueChange>>();
 
-        AddedAfterSprintStart = issues
+        AddedAfterSprintStart = enumeratedIssues
             .Where(i => i.Key != null && IssueChanges.ContainsKey(i.Key))
             .Where(i => i.Key != null && IssueChanges[i.Key].Any(x => x.ChangeType == IssueChangeType.AddedToSprint))
             .Select(i => EnrichIssue(i, ReportIssueType.Unplanned))
             .ToList();
-        PlannedIssues = issues
+        PlannedIssues = enumeratedIssues
             .Except(AddedAfterSprintStart)
             .Select(i => EnrichIssue(i, ReportIssueType.Planned))
             .ToList();
-        RemovedAfterSprintStart = issues
+        RemovedAfterSprintStart = enumeratedIssues
             .Where(i => i.Key != null && IssueChanges.ContainsKey(i.Key))
             .Where(i => i.Key != null && IssueChanges[i.Key].Any(x => x.ChangeType == IssueChangeType.RemovedFromSprint))
             .Select(i => EnrichIssue(i, ReportIssueType.Removed))
             .ToList();
-        AddedAndRemovedAfterSprintStart = issues
+        AddedAndRemovedAfterSprintStart = enumeratedIssues
+            .Except(PlannedIssues)
             .Where(i => i.Key != null && IssueChanges.ContainsKey(i.Key))
             .Where(i => i.Key != null &&
                         IssueChanges[i.Key].Any(x => x.ChangeType == IssueChangeType.AddedToSprint) &&
@@ -78,20 +84,12 @@ public class SprintReportEnriched
         {
             if (issue.Assignee == null)
             {
-                if (!userByName.TryGetValue(issue.Assignee?.Name ?? "", out var user))
-                {
-                    userByName[user.Name] = user;
-                }
-                else
-                {
-                    issue.Assignee = user;
-                }
+                issue.Assignee = User.Empty;
             }
-
+            
             if (!reportIssuesLocalCache.TryGetValue(issue.Key, out var reportIssue))
             {
-                reportIssue = new ReportIssue(issue, type);
-                reportIssuesLocalCache[issue.Key] = reportIssue;
+                reportIssuesLocalCache[issue.Key] = new ReportIssue(issue, type);
             }
             else
             {

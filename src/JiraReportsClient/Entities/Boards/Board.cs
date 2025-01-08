@@ -11,10 +11,15 @@ public class Board
     public string Name { get; set; }
     public BoardTypes Type { get; set; } 
     public bool IsPrivate { get; set; }
-    public Project Project { get; set; }
+    public Project? Project { get; set; }
     
     public static implicit operator Board(JiraBoard jiraBoard)
     {
         return jiraBoard.ToBoardModel();
+    }
+    
+    public bool IsEqual(string boardName)
+    {
+        return string.Compare(Name, boardName, StringComparison.OrdinalIgnoreCase) == 0;
     }
 }

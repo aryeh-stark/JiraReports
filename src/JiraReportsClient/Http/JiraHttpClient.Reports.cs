@@ -48,8 +48,7 @@ public partial class JiraHttpClient
 
         var content = await response.Content.ReadAsStringAsync();
         var sprintReport = JsonSerializer.Deserialize<SprintReportResponse>(content, _jsonOptions);
-        if (sprintReport == null || sprintReport?.Contents == null ||
-            sprintReport?.Contents.GetAllSprintIssues().Count == 0)
+        if (sprintReport?.Contents == null)
         {
             _logger
                 .WithEndpoint(endpoint)
