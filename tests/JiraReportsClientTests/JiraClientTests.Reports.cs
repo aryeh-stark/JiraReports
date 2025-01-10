@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using JiraReportsClient.Csv;
+using JiraReportsClient.Entities.Boards;
 using JiraReportsClient.Entities.Reports.SprintReports;
 using JiraReportsClient.Entities.Sprints;
 using JiraReportsClient.Utils.GoogleClient;
@@ -79,16 +80,38 @@ public partial class JiraClientTests
     }
 
     [Fact]
+    public async Task GetAllClosedSprintReportsForBoardUserNamesAsyncTest()
+    {
+        var sprintReportsByBoardUserId = await Client.GetAllClosedSprintReportsForBoardUserNamesAsync(10, "BE-WebSDK");
+        sprintReportsByBoardUserId.Should().NotBeEmpty();
+        
+        
+        var googleServiceConfiguration = GoogleServiceConfiguration.LoadFromAppSettings();
+
+        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator(
+            googleServiceConfiguration.HeaderBackgroundColor, googleServiceConfiguration.SprintBackgroundColor);
+        sprintMetricsSheetsGenerator.Should().NotBeNull();
+
+        var sheetData = sprintMetricsSheetsGenerator.PrepareSprintMetricsSheetByUser(sprintReportsByBoardUserId);
+
+        var sheetsHelper = new GoogleSheetsHelper(googleServiceConfiguration);
+        sheetsHelper.Should().NotBeNull();
+
+        try
+        {
+            var reference = sheetsHelper.CreateSpreadsheet(sheetData, false);
+        }
+        catch (Exception e)
+        {
+            
+        }
+    }
+
+    [Fact]
     public async Task GetAllClosedSprintReportsForBoardNamesAsyncTest()
     {
-        //var sprintReportsByBoardId = await Client.GetAllClosedSprintReportsForBoardNamesAsync(12, "BE-Core", "BE-Infra", "BE-WebSDK");
         var sprintReportsByBoardId = await Client.GetAllClosedSprintReportsForBoardNamesAsync(12, "BE-Core");
         sprintReportsByBoardId.Should().NotBeEmpty();
-
-
-        var jsonSchema = JsonSchemaGenerator.GeneratePrettySchema<IReadOnlyDictionary<int, SprintReportEnriched>>();
-        var jsonValue = JsonSerializer.Serialize(sprintReportsByBoardId, JsonOptions);
-
 
         var googleServiceConfiguration = GoogleServiceConfiguration.LoadFromAppSettings();
 
@@ -107,6 +130,7 @@ public partial class JiraClientTests
         }
         catch (Exception e)
         {
+            
         }
     }
 

@@ -6,5 +6,6 @@ public class UserSprintReportEnriched(User user, SprintReportEnriched sprintRepo
     reportIssue => reportIssue.Assignee?.Name == user.Name, sprintReportEnriched.Sprint,
     sprintReportEnriched.Issues, sprintReportEnriched.IssueChanges)
 {
+    public string Username => User.Name!;
     public User User { get; } = user ?? throw new ArgumentNullException(nameof(user));
 }

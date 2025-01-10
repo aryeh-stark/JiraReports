@@ -8,7 +8,7 @@ namespace JiraReportsClient.Entities.Boards;
 
 [DebuggerDisplay("[{BoardId}] {BoardName}")]
 [JsonConverter(typeof(BoardRecordKeyConverter))]
-public struct BoardRecord(int boardId, string boardName)
+public readonly struct BoardRecord(int boardId, string boardName) : IEquatable<BoardRecord>
 {
     [JsonPropertyName("boardId")]
     public int BoardId { get; } = boardId;
@@ -58,6 +58,10 @@ public struct BoardRecord(int boardId, string boardName)
         return new BoardRecord(board);
     }
 
+    public bool Equals(BoardRecord other)
+    {
+        return BoardId == other.BoardId && BoardName == other.BoardName;
+    }
 }
 
 public class BoardRecordKeyConverter : JsonConverter<BoardRecord>

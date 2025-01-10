@@ -8,8 +8,6 @@ namespace JiraReportsClient.Utils.GoogleClient.Sheets;
 
 public class SprintMetricsSheetsGenerator(Color backgroundHeaderColor, Color backgroundSprintColor)
 {
-    private Color _backgroundHeaderColor = backgroundHeaderColor;
-    
     private static readonly string[] Headers =
     [
         "SprintSequenceId",
@@ -45,7 +43,7 @@ public class SprintMetricsSheetsGenerator(Color backgroundHeaderColor, Color bac
         var headerFormatting = new SheetFormatting
         {
             IsBold = true,
-            BackgroundColor = _backgroundHeaderColor,
+            BackgroundColor = backgroundHeaderColor,
         };
         return Headers.Select(h => new HeaderCell(h, headerFormatting)).Cast<SheetCell>().ToList();
     }
@@ -165,5 +163,34 @@ public class SprintMetricsSheetsGenerator(Color backgroundHeaderColor, Color bac
             Title = "Sprint Metrics",
             Tabs = sheetsByBoard,
         };
+    }
+    
+    public SheetData PrepareSprintMetricsSheetByUser(IReadOnlyDictionary<BoardUserRecord, IReadOnlyList<UserSprintReportEnriched>> sprintsData)
+    {
+        var sheetTabsByBoardUser = sprintsData
+            .Select(boardUserSprints =>
+            {
+                var headerCells = CreateHeaderRow();
+                var dataCells = boardUserSprints.Value
+                    .OrderBy(s => s.Sprint.Id)
+                    .Select(sprintRecord => CreateDataRow(new SprintMetricsRecord(sprintRecord.Metrics)))
+                    .ToList();
+
+                var rows = new List<List<SheetCell>> { headerCells };
+                rows.AddRange(dataCells);
+
+                return new SheetTab
+                {
+                    Name = $"{boardUserSprints.Key.BoardName} - {boardUserSprints.Key.Username}",
+                    Rows = rows,
+                };
+            })
+            .ToList();
+        var sheetData = new SheetData
+        {
+            Title = "Sprint Metrics",
+            Tabs = sheetTabsByBoardUser,
+        };
+        return sheetData;
     }
 }

@@ -7,10 +7,21 @@ namespace JiraReportsClient;
 
 public partial class JiraClient
 {
-    public async Task<IReadOnlyDictionary<BoardRecord, IEnumerable<SprintReportEnriched>>>
-        GetAllClosedSprintReportsForBoardNamesAsync(
-            int last,
-            params string[] boardNames)
+    public async Task<IReadOnlyDictionary<BoardUserRecord, IReadOnlyList<UserSprintReportEnriched>>> GetAllClosedSprintReportsForBoardUserNamesAsync(int last, params string[] boardNames)
+    {
+        var boardSprints = await GetAllClosedSprintReportsForBoardNamesAsync(last, boardNames);
+
+        var userSprintsByUser = boardSprints
+            .SelectMany(kvp => kvp.Value)
+            .SelectMany(sprintReport => sprintReport.GroupByUser().Values)
+            .GroupBy(userSprint => new BoardUserRecord(userSprint.Board, userSprint.Username))
+            .Select(g => new KeyValuePair<BoardUserRecord, IReadOnlyList<UserSprintReportEnriched>>(
+                g.Key, g.ToList()))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        return userSprintsByUser;
+        
+    }
+    public async Task<IReadOnlyDictionary<BoardRecord, IEnumerable<SprintReportEnriched>>> GetAllClosedSprintReportsForBoardNamesAsync(int last, params string[] boardNames)
     {
         var boards = await GetBoardsAsync();
         var scrumBoards = boards

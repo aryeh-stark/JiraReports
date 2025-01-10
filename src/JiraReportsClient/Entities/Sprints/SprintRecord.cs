@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace JiraReportsClient.Entities.Sprints;
 
 [JsonConverter(typeof(SprintRecordKeyConverter))]
-public struct SprintRecord(int sprintId, string sprintName, string sprintSequenceId, int boardId, string boardName)
+public readonly struct SprintRecord(int sprintId, string sprintName, string sprintSequenceId, int boardId, string boardName)
 {
     [JsonPropertyName("sprintd")] 
     public int SprintId { get; } = sprintId;
