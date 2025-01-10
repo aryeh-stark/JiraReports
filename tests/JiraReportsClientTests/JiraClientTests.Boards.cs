@@ -15,7 +15,7 @@ public partial class JiraClientTests
     [Fact]
     public async Task GetBoardByIdAsyncTest()
     {
-        var board = await Client.GetBoardByIdAsync(84);
+        var board = await Client.GetBoardByIdAsync(81);
         board.Should().NotBeNull();
     }
 

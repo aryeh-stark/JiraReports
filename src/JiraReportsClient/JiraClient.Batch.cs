@@ -7,22 +7,23 @@ namespace JiraReportsClient;
 
 public partial class JiraClient
 {
-    public async Task<IReadOnlyDictionary<int, IEnumerable<SprintReportEnriched>>>
+    public async Task<IReadOnlyDictionary<BoardRecord, IEnumerable<SprintReportEnriched>>>
         GetAllClosedSprintReportsForBoardNamesAsync(
+            int last,
             params string[] boardNames)
     {
         var boards = await GetBoardsAsync();
         var scrumBoards = boards
             .Where(b => b.Type == BoardTypes.Scrum)
-            .Where(b => boardNames.Any(b.IsEqual))
+            .Where(b => boardNames.Any(bn => bn.Contains(b.Name, StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
-        var sprintReportsByBoardId = new Dictionary<int, IEnumerable<SprintReportEnriched>>();
+        var sprintReportsByBoardId = new Dictionary<BoardRecord, IEnumerable<SprintReportEnriched>>();
         foreach (var board in scrumBoards)
         {
             var sprintReports = await GetSprintReportsByBoard(board);
             if (sprintReports == null) continue;
-            sprintReportsByBoardId[board.Id] = sprintReports;
+            sprintReportsByBoardId[board] = sprintReports;
         }
 
         return sprintReportsByBoardId;
@@ -31,7 +32,13 @@ public partial class JiraClient
         {
             var sprints = await GetSprintsForBoardIdAsync(board, includeClosedSprints: true);
             var sprintReports = new List<SprintReportEnriched>();
-            foreach (var sprint in sprints.Where(s => s.State == SprintState.Closed && s.IsValidSequenceId()))
+            var sprintsToQuery = sprints
+                .Where(s => s.State == SprintState.Closed)
+                .Where(s => s.Name.Contains(board.Name, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(s => s.EndDate)
+                .Take(last)
+                .ToList();
+            foreach (var sprint in sprintsToQuery)
             {
                 var sprintReport = await GetSprintReportEnrichedAsync(board, sprint.Id);
                 if (sprintReport == null) continue;
@@ -52,9 +59,14 @@ public partial class JiraClient
         var sprintReports = new List<SprintReportEnriched>();
         if (board == null) return sprintReports;
 
-        var unverifiedSprints = await GetSprintsForBoardIdAsync(board, includeClosedSprints: true);
-        var sprints = unverifiedSprints.Where(s => s.IsValidSequenceId()).ToList();
-        foreach (var sprint in sprints.Where(s => s.IsValidSequenceId()))
+        var sprints = await GetSprintsForBoardIdAsync(board, includeClosedSprints: true);
+        var sprintsToQuery = sprints
+            .Where(s => s.State == SprintState.Closed)
+            .Where(s => s.Name.Contains(board.Name, StringComparison.OrdinalIgnoreCase))
+            .Where(s => s.IsValidSequenceId())
+            .OrderByDescending(s => s.EndDate)
+            .ToList();
+        foreach (var sprint in sprintsToQuery)
         {
             var sprintReport = await GetSprintReportEnrichedAsync(board, sprint.Id);
             if (sprintReport == null) continue;
@@ -64,8 +76,7 @@ public partial class JiraClient
         return sprintReports;
     }
 
-    public async Task<IReadOnlyDictionary<int, SprintReportEnriched>> GetLastClosedSprintReportsForBoardNamesAsync(
-            params string[] boardNames)
+    public async Task<IReadOnlyDictionary<BoardRecord, SprintReportEnriched>> GetLastClosedSprintReportsForBoardNamesAsync(params string[] boardNames)
     {
         var boards = await GetBoardsAsync();
         var scrumBoards = boards
@@ -73,12 +84,12 @@ public partial class JiraClient
             .Where(b => boardNames.Any(b.IsEqual))
             .ToList();
 
-        var sprintReportsByBoardId = new Dictionary<int, SprintReportEnriched>();
+        var sprintReportsByBoardId = new Dictionary<BoardRecord, SprintReportEnriched>();
         foreach (var board in scrumBoards)
         {
             var sprintReports = await GetLastSprintReportsByBoard(board);
             if (sprintReports == null) continue;
-            sprintReportsByBoardId[board.Id] = sprintReports;
+            sprintReportsByBoardId[board] = sprintReports;
         }
 
         return sprintReportsByBoardId;
@@ -89,6 +100,7 @@ public partial class JiraClient
             var lastClosedSprint = sprints
                 .Where(s => s.IsValidSequenceId())
                 .Where(s => s.State == SprintState.Closed)
+                .Where(s => s.Name.Contains(board.Name, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(s => s.EndDate)
                 .FirstOrDefault();
             

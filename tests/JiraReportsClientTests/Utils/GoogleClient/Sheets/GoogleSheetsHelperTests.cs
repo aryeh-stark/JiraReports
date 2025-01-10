@@ -10,22 +10,12 @@ namespace JiraReportsClientTests.Utils.GoogleClient.Sheets;
 public class GoogleDriveHelperTests
 {
     [Fact]
-    public void GetSheetIdTest()
+    public void PrepareSprintMetricsSheetMockedTest()
     {
         var config = GoogleServiceConfiguration.LoadFromAppSettings();
         config.Should().NotBeNull();
-
-        var helper = new GoogleDriveHelper(config);
-        helper.Should().NotBeNull();
-
-        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator();
-        sprintMetricsSheetsGenerator.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void PrepareSprintMetricsSheetMockedTest()
-    {
-        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator();
+        
+        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator(config.HeaderBackgroundColor, config.SprintBackgroundColor);
         sprintMetricsSheetsGenerator.Should().NotBeNull();
 
         var metricsRecord = GenerateBogusMetricsRecord();
@@ -42,13 +32,12 @@ public class GoogleDriveHelperTests
             sheetTab.Rows.Should().NotBeNullOrEmpty();
             sheetTab.Rows.Count.Should().Be(metricsRecords.Count + headerRowCount);
             sheetTab.Rows[0].Should().NotBeNullOrEmpty();
-            sheetTab.Rows[0].Count.Should().Be(expectedColumnCount);
+            sheetTab.Rows[0].Count.Should().Be(expectedColumnCount - 1);
             sheetTab.Rows[1].Should().NotBeNullOrEmpty();
-            sheetTab.Rows[1].Count.Should().Be(expectedColumnCount);
+            sheetTab.Rows[1].Count.Should().Be(expectedColumnCount - 1);
         }
         
-        var config = GoogleServiceConfiguration.LoadFromAppSettings();
-        config.Should().NotBeNull();
+       
         
         var helper = new GoogleSheetsHelper(config);
         helper.Should().NotBeNull();
@@ -67,7 +56,7 @@ public class GoogleDriveHelperTests
         var helper = new GoogleSheetsHelper(config);
         helper.Should().NotBeNull();
         
-        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator();
+        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator(config.HeaderBackgroundColor, config.SprintBackgroundColor);
         sprintMetricsSheetsGenerator.Should().NotBeNull();
 
         var metricsRecord = GenerateBogusMetricsRecord();

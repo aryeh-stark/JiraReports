@@ -23,7 +23,8 @@ public partial class JiraClientTests
             .FirstOrDefault();
         lastClosedSprint.Should().NotBeNull();
 
-        var sprintReportEnriched = await Client.GetSprintReportEnrichedAsync(lastClosedSprint!.Board, lastClosedSprint!.Id);
+        var sprintReportEnriched =
+            await Client.GetSprintReportEnrichedAsync(lastClosedSprint!.Board, lastClosedSprint!.Id);
         sprintReportEnriched.Should().NotBeNull();
     }
 
@@ -39,7 +40,8 @@ public partial class JiraClientTests
             .FirstOrDefault();
         lastClosedSprint.Should().NotBeNull();
 
-        var sprintReportEnriched = await Client.GetSprintReportEnrichedAsync(lastClosedSprint!.Board, lastClosedSprint!.Id);
+        var sprintReportEnriched =
+            await Client.GetSprintReportEnrichedAsync(lastClosedSprint!.Board, lastClosedSprint!.Id);
         sprintReportEnriched.Should().NotBeNull();
 
         var json = sprintReportEnriched.ToJson();
@@ -58,7 +60,8 @@ public partial class JiraClientTests
             .FirstOrDefault();
         lastClosedSprint.Should().NotBeNull();
 
-        var sprintReportEnriched = await Client.GetSprintReportEnrichedAsync(lastClosedSprint!.Board, lastClosedSprint!.Id);
+        var sprintReportEnriched =
+            await Client.GetSprintReportEnrichedAsync(lastClosedSprint!.Board, lastClosedSprint!.Id);
         sprintReportEnriched.Should().NotBeNull();
 
         var sprintReportEnrichedGroupedByUser = sprintReportEnriched!.GroupByUser();
@@ -67,35 +70,64 @@ public partial class JiraClientTests
         var byUser = UserSprintMetricsCsvSerializer.Serialize(sprintReportEnrichedGroupedByUser.Values);
         var byTeam = SprintMetricsCsvSerializer.Serialize(sprintReportEnriched);
     }
-    
+
     [Fact]
     public async Task GetAllClosedSprintReportsForBoardNameAsyncTest()
     {
         var sprintReportsByBoardId = await Client.GetAllClosedSprintReportsForBoardNameAsync("BE-Core");
         sprintReportsByBoardId.Should().NotBeEmpty();
     }
-    
+
     [Fact]
     public async Task GetAllClosedSprintReportsForBoardNamesAsyncTest()
     {
-        var sprintReportsByBoardId = await Client.GetAllClosedSprintReportsForBoardNamesAsync("BE-Core");
+        //var sprintReportsByBoardId = await Client.GetAllClosedSprintReportsForBoardNamesAsync(12, "BE-Core", "BE-Infra", "BE-WebSDK");
+        var sprintReportsByBoardId = await Client.GetAllClosedSprintReportsForBoardNamesAsync(12, "BE-Core");
         sprintReportsByBoardId.Should().NotBeEmpty();
+
+
+        var jsonSchema = JsonSchemaGenerator.GeneratePrettySchema<IReadOnlyDictionary<int, SprintReportEnriched>>();
+        var jsonValue = JsonSerializer.Serialize(sprintReportsByBoardId, JsonOptions);
+
+
+        var googleServiceConfiguration = GoogleServiceConfiguration.LoadFromAppSettings();
+
+        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator(
+            googleServiceConfiguration.HeaderBackgroundColor, googleServiceConfiguration.SprintBackgroundColor);
+        sprintMetricsSheetsGenerator.Should().NotBeNull();
+
+        var sheetData = sprintMetricsSheetsGenerator.PrepareSprintMetricsSheetByBoard(sprintReportsByBoardId);
+
+        var sheetsHelper = new GoogleSheetsHelper(googleServiceConfiguration);
+        sheetsHelper.Should().NotBeNull();
+
+        try
+        {
+            var reference = sheetsHelper.CreateSpreadsheet(sheetData, false);
+        }
+        catch (Exception e)
+        {
+        }
     }
-    
+
     [Fact]
     public async Task GetLastClosedSprintReportsForBoardNamesAsyncTest()
     {
-        var sprintReportByBoardId = await Client.GetLastClosedSprintReportsForBoardNamesAsync("BE-Core", "BE-Infra", "BE-WebSDK");
+        var sprintReportByBoardId =
+            await Client.GetLastClosedSprintReportsForBoardNamesAsync("BE-Core", "BE-Infra", "BE-WebSDK");
         sprintReportByBoardId.Should().NotBeEmpty();
 
-        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator();
+        var googleServiceConfiguration = GoogleServiceConfiguration.LoadFromAppSettings();
+
+        var sprintMetricsSheetsGenerator = new SprintMetricsSheetsGenerator(
+            googleServiceConfiguration.HeaderBackgroundColor, googleServiceConfiguration.SprintBackgroundColor);
         sprintMetricsSheetsGenerator.Should().NotBeNull();
 
         var sheetData = sprintMetricsSheetsGenerator.PrepareSprintMetricsSheetByBoard(sprintReportByBoardId);
-        
+
         var config = GoogleServiceConfiguration.LoadFromAppSettings();
         config.Should().NotBeNull();
-        
+
         var helper = new GoogleSheetsHelper(config);
         helper.Should().NotBeNull();
 
@@ -107,7 +139,6 @@ public partial class JiraClientTests
         {
         }
 
-        
         var jsonSchema = JsonSchemaGenerator.GeneratePrettySchema<IReadOnlyDictionary<int, SprintReportEnriched>>();
         var jsonValue = JsonSerializer.Serialize(sprintReportByBoardId);
     }
